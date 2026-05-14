@@ -307,7 +307,7 @@ function updateTypingIndicator(data) {
 
     if (relevant && data.escribiendo) {
         $("#typingIndicator").removeClass("d-none");
-        $("#typingUser").text(data.remitenteNombre + " está escribiendo...");
+        $("#typingUser").text(data.remitenteNombre);
     } else {
         $("#typingIndicator").addClass("d-none");
     }

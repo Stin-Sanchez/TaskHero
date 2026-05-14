@@ -123,7 +123,11 @@ function sendTypingStatus(targetId, isGroup, isTyping) {
 }
 
 function showChatAlert(title, content) {
-    // Reutilizamos el toast de notificaciones o creamos uno nuevo
+    // Configurar icono y título para mensajes de chat
+    const toastHeader = $("#liveToast .toast-header");
+    toastHeader.find("i").removeClass().addClass("bi bi-chat-dots-fill me-2");
+    toastHeader.find("strong").text("Mensaje del Gremio");
+
     $("#toastMessage").html(`<strong>${title}</strong><br>${content}`);
     const toast = new bootstrap.Toast(document.getElementById('liveToast'));
     toast.show();
@@ -164,6 +168,11 @@ function sendWSGroupMessage(groupId, content) {
 }
 
 function handleIncomingNotification(notif) {
+    // Restaurar icono original para notificaciones de sistema (Héroe/Misión)
+    const toastHeader = $("#liveToast .toast-header");
+    toastHeader.find("i").removeClass().addClass("bi bi-check-circle-fill me-2");
+    toastHeader.find("strong").text("TaskHero");
+
     $("#toastMessage").text(notif.mensaje);
     const toast = new bootstrap.Toast(document.getElementById('liveToast'));
     toast.show();

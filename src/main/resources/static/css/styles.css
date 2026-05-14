@@ -41,11 +41,20 @@ body {
 }
 
 /* --- CORRECCIÓN CRÍTICA DE VISIBILIDAD --- */
-h1, h2, h3, h4, h5, h6, .navbar-brand, .nav-link, span:not(.badge), p, div:not(.message-bubble-me), label {
+/* Forzamos color de texto en todos los elementos base, incluyendo inputs */
+h1, h2, h3, h4, h5, h6, .navbar-brand, .nav-link, span:not(.badge), p, div:not(.message-bubble-me), label, input, textarea, select {
     color: var(--text-main) !important;
 }
 
-/* Texto Muted (Prioridad sobre la regla general) */
+/* Placeholder corregido para visibilidad en modo oscuro */
+::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 1;
+}
+::-webkit-input-placeholder { color: var(--text-muted) !important; }
+:-ms-input-placeholder { color: var(--text-muted) !important; }
+
+/* Texto Muted */
 .text-muted, small, .small {
     color: var(--text-muted) !important;
 }
@@ -55,8 +64,8 @@ i, .bi {
     color: var(--icon-color) !important;
 }
 
-/* Excepción para elementos con fondo primario (Azul) */
-.btn-primary, .message-bubble-me, .badge, .bg-primary {
+/* Excepción para elementos con fondo primario o burbujas propias */
+.btn-primary, .message-bubble-me, .badge, .bg-primary, .progress-bar {
     color: #ffffff !important;
 }
 
@@ -82,7 +91,11 @@ i, .bi {
 /* Búsqueda (Header) */
 .input-group-text {
     background-color: var(--input-bg) !important;
-    border-color: var(--border-color) !important;
+    border: none !important;
+}
+
+#taskSearch {
+    background-color: var(--input-bg) !important;
 }
 
 /* Sidebar Fija */
@@ -92,6 +105,18 @@ i, .bi {
     top: 5rem;
     align-self: flex-start;
     z-index: 10;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.sidebar-sticky::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-sticky::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
 }
 
 /* Chat Styles */

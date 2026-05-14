@@ -1,15 +1,14 @@
 # ===================================================================
 # CONFIGURACIÓN DE BASE DE DATOS (MySQL)
 # ===================================================================
-spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/taskhero_db?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false}
-spring.datasource.username=${DB_USERNAME:root}
-spring.datasource.password=${DB_PASSWORD:190904}
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/nombre_tu_db?createDatabaseIfNotExist=true&serverTimezone=UTC&useSSL=false}
+spring.datasource.username=${DB_USERNAME:tu_usuario}
+spring.datasource.password=${DB_PASSWORD:tu_password}
 spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 
 # ===================================================================
 # CONFIGURACIÓN JPA / HIBERNATE
 # ===================================================================
-# 'update' crea las tablas automáticamente al iniciar según las entidades JPA
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
@@ -22,14 +21,14 @@ server.port=8080
 spring.application.name=taskhero-backend
 
 # ===================================================================
-# SEGURIDAD Y JWT (Base para el siguiente paso)
+# SEGURIDAD Y JWT
 # ===================================================================
-# Tiempo de expiración: 1 día (en milisegundos)
-app.jwt.secret=${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+# app.jwt.secret debe ser una cadena Base64 segura de al menos 256 bits
+app.jwt.secret=${JWT_SECRET:TU_JWT_SECRET_KEY_AQUI}
 app.jwt.expiration-ms=86400000
 
 # Clave de cifrado para datos sensibles en DB (Mensajes)
-app.db.encryption-key=${DB_ENCRYPTION_KEY:HeroTaskSecureKey2026!}
+app.db.encryption-key=${DB_ENCRYPTION_KEY:TU_CLAVE_DE_CIFRADO_AQUI}
 
 # ===================================================================
 # CONFIGURACIÓN DE EMAIL (SMTP)
@@ -40,4 +39,3 @@ spring.mail.username=${MAIL_USERNAME:tu-correo@gmail.com}
 spring.mail.password=${MAIL_PASSWORD:tu-app-password}
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
-
