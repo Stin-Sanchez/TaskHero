@@ -1,0 +1,165 @@
+:root {
+    /* Facebook Light Palette */
+    --bg-color: #F0F2F5;
+    --card-bg: #FFFFFF;
+    --text-main: #050505;
+    --text-muted: #65676B;
+    --hero-primary: #1877F2;
+    --hero-primary-hover: #166FE5;
+    --hero-accent: #1877F2;
+    --border-color: #CED0D4;
+    --input-bg: #F0F2F5;
+    --icon-color: #050505;
+    --chat-bubble-me: #0084FF;
+    --chat-bubble-other: #E4E6EB;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+    /* Facebook Dark Palette */
+    --bg-color: #18191A;
+    --card-bg: #242526;
+    --text-main: #E4E6EB;
+    --text-muted: #B0B3B8;
+    --hero-primary: #2D88FF;
+    --hero-primary-hover: #1877F2;
+    --hero-accent: #2D88FF;
+    --border-color: #3E4042;
+    --input-bg: #3A3B3C;
+    --icon-color: #E4E6EB;
+    --chat-bubble-me: #0084FF;
+    --chat-bubble-other: #3A3B3C;
+    --shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+}
+
+/* --- CORRECCIÓN CRÍTICA DE VISIBILIDAD --- */
+h1, h2, h3, h4, h5, h6, .navbar-brand, .nav-link, span:not(.badge), p, div:not(.message-bubble-me), label {
+    color: var(--text-main) !important;
+}
+
+/* Texto Muted (Prioridad sobre la regla general) */
+.text-muted, small, .small {
+    color: var(--text-muted) !important;
+}
+
+/* Forzamos que los iconos cambien con el tema */
+i, .bi {
+    color: var(--icon-color) !important;
+}
+
+/* Excepción para elementos con fondo primario (Azul) */
+.btn-primary, .message-bubble-me, .badge, .bg-primary {
+    color: #ffffff !important;
+}
+
+/* --- COMPONENTES --- */
+
+.navbar {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card, .modal-content {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.card-header, .card-footer, .modal-header, .modal-footer {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Búsqueda (Header) */
+.input-group-text {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Sidebar Fija */
+.sidebar-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 5rem;
+    align-self: flex-start;
+    z-index: 10;
+}
+
+/* Chat Styles */
+#chatMessages {
+    background-color: var(--bg-color) !important;
+    border-radius: 8px;
+    padding: 1rem;
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+}
+
+.list-group-item {
+    background-color: var(--card-bg) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+
+.list-group-item:hover {
+    background-color: var(--input-bg) !important;
+}
+
+/* Botones */
+.btn-primary {
+    background-color: var(--hero-primary) !important;
+    border: none !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--hero-primary-hover) !important;
+}
+
+.btn-light {
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Inputs */
+.form-control, .form-select {
+    background-color: var(--input-bg) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Burbujas de Chat Mejoradas */
+.message-bubble-me {
+    background-color: var(--chat-bubble-me) !important;
+    border-radius: 18px 18px 0 18px !important;
+    padding: 0.6rem 1rem;
+}
+
+.message-bubble-other {
+    background-color: var(--chat-bubble-other) !important;
+    border-radius: 18px 18px 18px 0 !important;
+    padding: 0.6rem 1rem;
+}
+
+/* Badge de Nivel */
+#levelBadge, .badge.bg-primary {
+    background-color: var(--hero-primary) !important;
+}
+
+.xp-progress {
+    background-color: var(--border-color);
+    height: 8px;
+    border-radius: 4px;
+}
+
+#xpBar {
+    background: var(--hero-primary);
+}
