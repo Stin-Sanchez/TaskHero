@@ -194,10 +194,11 @@ function handleIncomingNotification(notif) {
         }
     }
 
+    const notifIcon = typeof getNotifIcon === 'function' ? getNotifIcon(notif.tipo) : { icon: 'bi-bell-fill', color: 'var(--ks-gold)' };
     list.prepend(`
         <li class="list-group-item list-group-item-action border-0 py-3 small">
             <div class="d-flex gap-2">
-                <i class="bi bi-stars text-primary"></i>
+                <i class="bi ${notifIcon.icon}" style="color: ${notifIcon.color};"></i>
                 <div>
                     <div>${notif.mensaje}</div>
                     ${actionBtn}
@@ -221,7 +222,7 @@ function appendMessage(msg) {
         <div style="margin-bottom: 1.5rem; max-width: 80%; ${side}">
             ${!isMe ? `<div class="ks-mono" style="font-size: 0.55rem; color: var(--ks-gold); margin-bottom: 4px;">${escapeHtml(msg.remitenteNombre)}</div>` : ''}
             <div class="ks-card" style="padding: 0.75rem 1rem; background: ${bg}; border-radius: 4px; display: inline-block; text-align: left; border-color: ${isMe ? 'var(--ks-gold)' : 'var(--ks-rule)'};">
-                <div style="color: ${color}; font-size: 0.9rem;">${escapeHtml(msg.contenido)}</div>
+                <div style="color: ${color}; font-size: 0.9rem; white-space: pre-wrap; word-break: break-word;">${escapeHtml(msg.contenido)}</div>
             </div>
             <div class="ks-mono" style="font-size: 0.5rem; color: var(--ks-text-faint); margin-top: 4px;">${new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
         </div>

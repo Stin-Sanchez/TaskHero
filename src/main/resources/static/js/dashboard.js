@@ -13,6 +13,20 @@ const HERO_AVATARS = [
     { url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Frost" }
 ];
 
+// Metafora de icono por tipo de notificacion (evita el "todo es una estrella")
+const NOTIF_ICONS = {
+    TAREA_COMPLETADA:   { icon: 'bi-check-circle-fill', color: 'var(--ks-patina)' },
+    NIVEL_SUBIDO:       { icon: 'bi-graph-up-arrow',    color: 'var(--ks-gold)' },
+    RACHA_MANTENIDA:    { icon: 'bi-fire',              color: 'oklch(66% 0.19 40)' },
+    MENSAJE_RECIBIDO:   { icon: 'bi-chat-dots-fill',    color: 'var(--ks-patina)' },
+    LOGRO_DESBLOQUEADO: { icon: 'bi-award-fill',        color: 'var(--ks-gold)' },
+    INVITACION_GREMIO:  { icon: 'bi-flag-fill',         color: 'var(--ks-gold)' },
+    SISTEMA:            { icon: 'bi-gear-fill',         color: 'var(--ks-text-muted)' },
+};
+function getNotifIcon(tipo) {
+    return NOTIF_ICONS[tipo] || { icon: 'bi-bell-fill', color: 'var(--ks-gold)' };
+}
+
 let allTasks = [];
 let currentFilter = 'all';
 let myUserId = null;
@@ -184,25 +198,32 @@ $(document).ready(function() {
             sendWSMessage(currentChatId, content);
         }
 
-        if (typeof appendMessage === 'function') {
-            appendMessage({
-                remitenteId: myUserId,
-                remitenteNombre: 'Yo',
-                contenido: content,
-                timestamp: new Date().toISOString()
-            });
-        }
-        $("#chatInput").val('');
+        // No se agrega el mensaje aqui de forma optimista: el servidor lo
+        // reenvia por el mismo topico del WebSocket al que ya estamos
+        // suscritos, asi que appendMessage() lo pinta cuando llegue (evita el duplicado).
+        $("#chatInput").val('').trigger('input');
         sendTypingStatus(currentChatId, currentChatType === 'group', false);
     });
 
     $("#chatInput").on("input", function() {
+        // Auto-crecer el textarea segun el contenido, como cualquier chat estandar
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+
         if (!currentChatId) return;
         sendTypingStatus(currentChatId, currentChatType === 'group', true);
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => {
             sendTypingStatus(currentChatId, currentChatType === 'group', false);
         }, 1500);
+    });
+
+    // Enter envia el mensaje, Shift+Enter agrega salto de linea
+    $("#chatInput").on("keydown", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            $("#chatForm").trigger("submit");
+        }
     });
 
     // --- GROUPS: CREATE ---
@@ -358,11 +379,11 @@ function renderTasks() {
     pageItems.forEach((task, index) => {
         const pClass = task.prioridad === 'ALTA' ? 'pr-high' : (task.prioridad === 'MEDIA' ? 'pr-med' : 'pr-low');
         const row = $(`
-            <div class="task-row ks-enter" style="animation-delay: ${index * 0.04}s">
+            <div class="task-row ks-enter ${task.completada ? 'completed' : ''}" style="animation-delay: ${index * 0.04}s">
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
                     <div class="priority-mark ${pClass}"></div>
                     <div>
-                        <div class="${task.completada ? 'text-muted' : ''}" style="font-weight: 600; ${task.completada ? 'text-decoration: line-through' : ''}">
+                        <div class="${task.completada ? 'task-title-completed' : ''}" style="font-weight: 600;">
                             ${escapeHtml(task.titulo)}
                         </div>
                         <div class="ks-mono" style="font-size: 0.6rem; color: var(--ks-text-faint); margin-top: 0.25rem;">
@@ -371,7 +392,7 @@ function renderTasks() {
                     </div>
                 </div>
                 <div>
-                    ${!task.completada ? `<button class="ks-btn ks-btn-secondary" style="font-size: 0.7rem;" onclick="completeTask(${task.id}, this)">COMPLETAR</button>` : `<span class="ks-mono text-patina">LOGRADA</span>`}
+                    ${!task.completada ? `<button class="ks-btn ks-btn-secondary" style="font-size: 0.7rem;" onclick="completeTask(${task.id}, this)">COMPLETAR</button>` : `<span class="ks-mono text-patina" style="display: inline-flex; align-items: center; gap: 0.4rem;"><i class="bi bi-check-circle-fill"></i>LOGRADA</span>`}
                 </div>
             </div>
         `);
@@ -445,9 +466,10 @@ function buildNotificationItem(notif) {
         }
     }
     const readBtn = notif.leida ? '' : `<button type="button" class="notif-mark-read" title="Marcar como leída" onclick="markNotificationRead(${notif.id}, this)"><i class="bi bi-check-lg"></i></button>`;
+    const { icon, color } = getNotifIcon(notif.tipo);
     return `
         <li class="notif-item ${notif.leida ? '' : 'unread'}" data-notif-id="${notif.id}">
-            <i class="bi bi-stars" style="color: var(--ks-gold); margin-top: 0.15rem;"></i>
+            <i class="bi ${icon}" style="color: ${color}; margin-top: 0.15rem;"></i>
             <div style="flex: 1;">
                 <div class="notif-msg small">${escapeHtml(mensaje)}</div>
                 ${actionBtn}
@@ -669,6 +691,7 @@ function openChat(id, nombre) {
                 return;
             }
             messages.forEach(msg => appendMessage(msg));
+            $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
         }
     });
 }
@@ -691,6 +714,7 @@ function openGroupChat(id, nombre) {
                 return;
             }
             messages.forEach(msg => appendMessage(msg));
+            $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
         }
     });
 }
