@@ -42,4 +42,20 @@ public class EmailAdapter implements EmailPort {
             System.err.println("Error al enviar email de logro: " + e.getMessage());
         }
     }
+
+    @Override
+    @Async
+    public void enviarCorreoRecuperacion(String destinatario, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(destinatario);
+        message.setSubject("Recuperación de Contraseña - TaskHero");
+        message.setText("Has solicitado restablecer tu contraseña. Utiliza el siguiente código para continuar:\n\n" 
+                + token + "\n\nSi no has sido tú, ignora este mensaje.");
+        
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Error al enviar email de recuperación: " + e.getMessage());
+        }
+    }
 }

@@ -67,4 +67,9 @@ public class TareaController {
         gestionarTareaUseCase.eliminarTarea(getAuthenticatedUserId(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/stats")
+    public ResponseEntity<com.stinjoss.chat.websocket.chat_websocket.application.dto.EstadisticasResponse> getStats() {
+        return ResponseEntity.ok(gestionarTareaUseCase.obtenerEstadisticas(getAuthenticatedUserId()));
+    }
 }

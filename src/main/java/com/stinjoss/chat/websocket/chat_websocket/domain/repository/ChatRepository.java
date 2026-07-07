@@ -10,4 +10,7 @@ public interface ChatRepository {
     List<Mensaje> findHistorialGrupo(Long grupoId);
     GrupoChat saveGrupo(GrupoChat grupo);
     List<GrupoChat> findGruposByUsuarioId(Long usuarioId);
+    java.util.Optional<GrupoChat> findGrupoById(Long id);
+    void agregarMiembroAlGrupo(Long grupoId, Long usuarioId);
+    List<GrupoChat> buscarGruposPorNombre(String nombre);
 }

@@ -49,4 +49,13 @@ public class UsuarioEntity {
     @Builder.Default
     @Column(name = "is_premium", nullable = false, columnDefinition = "boolean default false")
     private Boolean isPremium = false;
+
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
+
+    @Column(name = "token_expiration")
+    private LocalDateTime tokenExpiration;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 }

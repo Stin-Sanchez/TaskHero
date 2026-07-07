@@ -118,6 +118,36 @@ public class ChatService implements ChatUseCase {
     }
 
     @Override
+    @Transactional
+    public void invitarMiembro(Long remitenteId, Long receptorId, Long grupoId) {
+        verificarNivelUsuario(remitenteId);
+        GrupoChat grupo = chatRepository.findGrupoById(grupoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
+        
+        Usuario remitente = usuarioRepository.findById(remitenteId).orElseThrow();
+        
+        String mensaje = remitente.getNombre() + " te ha enviado un Pergamino de Reclutamiento para el gremio: " + grupo.getNombre() + " [GRP:" + grupoId + "]";
+        
+        notificationUseCase.enviarNotificacion(receptorId, TipoNotificacion.INVITACION_GREMIO, mensaje);
+    }
+
+    @Override
+    @Transactional
+    public void aceptarInvitacion(Long usuarioId, Long grupoId) {
+        GrupoChat grupo = chatRepository.findGrupoById(grupoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Grupo no encontrado"));
+        
+        chatRepository.agregarMiembroAlGrupo(grupoId, usuarioId);
+        
+        notificationUseCase.enviarNotificacion(usuarioId, TipoNotificacion.SISTEMA, "¡Te has unido al gremio " + grupo.getNombre() + "!");
+    }
+
+    @Override
+    public List<GrupoChat> buscarGrupos(String nombre) {
+        return chatRepository.buscarGruposPorNombre(nombre);
+    }
+
+    @Override
     public List<GrupoChat> listarGruposPorUsuario(Long usuarioId) {
         return chatRepository.findGruposByUsuarioId(usuarioId);
     }

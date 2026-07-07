@@ -11,4 +11,7 @@ public interface ChatUseCase {
     List<Mensaje> obtenerHistorialGrupo(Long grupoId);
     GrupoChat crearGrupo(String nombre, Long creadorId, List<Long> miembrosIds);
     List<GrupoChat> listarGruposPorUsuario(Long usuarioId);
+    void invitarMiembro(Long remitenteId, Long receptorId, Long grupoId);
+    void aceptarInvitacion(Long usuarioId, Long grupoId);
+    List<GrupoChat> buscarGrupos(String nombre);
 }

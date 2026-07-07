@@ -1,8 +1,11 @@
 package com.stinjoss.chat.websocket.chat_websocket.application.service;
 
 import com.stinjoss.chat.websocket.chat_websocket.application.dto.RegistroRequest;
+import com.stinjoss.chat.websocket.chat_websocket.application.dto.PerfilRequest;
 import com.stinjoss.chat.websocket.chat_websocket.application.port.in.RegistrarUsuarioUseCase;
+import com.stinjoss.chat.websocket.chat_websocket.application.port.in.GestionarPerfilUseCase;
 import com.stinjoss.chat.websocket.chat_websocket.domain.exception.DomainException;
+import com.stinjoss.chat.websocket.chat_websocket.domain.exception.ResourceNotFoundException;
 import com.stinjoss.chat.websocket.chat_websocket.domain.model.Usuario;
 import com.stinjoss.chat.websocket.chat_websocket.domain.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +18,7 @@ import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
-public class UsuarioService implements RegistrarUsuarioUseCase {
+public class UsuarioService implements RegistrarUsuarioUseCase, GestionarPerfilUseCase {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -24,12 +27,11 @@ public class UsuarioService implements RegistrarUsuarioUseCase {
     @Override
     @Transactional
     public Usuario registrar(RegistroRequest request) {
-        // 1. Validar si el email ya existe
+        // ... (resto del código igual)
         if (usuarioRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new DomainException("El email ya está registrado");
         }
 
-        // 2. Crear instancia de dominio
         Usuario nuevoUsuario = Usuario.builder()
                 .nombre(request.getNombre())
                 .email(request.getEmail())
@@ -38,16 +40,33 @@ public class UsuarioService implements RegistrarUsuarioUseCase {
                 .nivelActual(1)
                 .rachaDias(0)
                 .isPremium(false)
-                .ultimoLogin(LocalDateTime.now())
+                .ultimoLogin(LocalDateTime.now()) // Intencional: evita el bono de login diario el mismo día del registro.
                 .amigosIds(new ArrayList<>())
                 .build();
 
-        // 3. Guardar a través del puerto de dominio
         Usuario guardado = usuarioRepository.save(nuevoUsuario);
-
-        // 4. Enviar email de bienvenida
         emailPort.enviarCorreoBienvenida(guardado.getEmail(), guardado.getNombre());
 
         return guardado;
+    }
+
+    @Override
+    @Transactional
+    public Usuario actualizarPerfil(Long usuarioId, PerfilRequest request) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        usuario.setNombre(request.getNombre());
+        usuario.setAvatarUrl(request.getAvatarUrl());
+
+        // Si desea cambiar la contraseña
+        if (request.getPasswordNueva() != null && !request.getPasswordNueva().isBlank()) {
+            if (request.getPasswordActual() == null || !passwordEncoder.matches(request.getPasswordActual(), usuario.getPasswordHash())) {
+                throw new DomainException("La contraseña actual es incorrecta");
+            }
+            usuario.setPasswordHash(passwordEncoder.encode(request.getPasswordNueva()));
+        }
+
+        return usuarioRepository.save(usuario);
     }
 }

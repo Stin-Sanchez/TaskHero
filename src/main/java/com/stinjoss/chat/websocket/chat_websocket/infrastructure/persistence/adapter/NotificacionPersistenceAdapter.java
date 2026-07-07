@@ -1,6 +1,7 @@
 package com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.adapter;
 
 import com.stinjoss.chat.websocket.chat_websocket.domain.model.Notificacion;
+import com.stinjoss.chat.websocket.chat_websocket.domain.model.enums.TipoNotificacion;
 import com.stinjoss.chat.websocket.chat_websocket.domain.repository.NotificacionRepository;
 import com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.entity.NotificacionEntity;
 import com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.entity.UsuarioEntity;
@@ -10,6 +11,7 @@ import com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.rep
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,5 +44,12 @@ public class NotificacionPersistenceAdapter implements NotificacionRepository {
             n.setLeida(true);
             jpaRepository.save(n);
         });
+    }
+
+    @Override
+    public boolean existsByUsuarioIdAndTipoAndFechaCreacionAfter(Long usuarioId, TipoNotificacion tipo, LocalDateTime fecha) {
+        com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.entity.enums.TipoNotificacion infraTipo = 
+                com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.entity.enums.TipoNotificacion.valueOf(tipo.name());
+        return jpaRepository.existsByUsuarioIdAndTipoAndCreatedAtAfter(usuarioId, infraTipo, fecha);
     }
 }

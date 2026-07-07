@@ -19,6 +19,9 @@ public class Usuario {
     private boolean isPremium;
     private LocalDateTime ultimoLogin;
     private List<Long> amigosIds;
+    private String resetPasswordToken;
+    private LocalDateTime tokenExpiration;
+    private String avatarUrl;
 
     /**
      * Regla de Negocio: Sumar XP y retornar si subió de nivel.
@@ -42,7 +45,26 @@ public class Usuario {
     }
 
     public void actualizarRacha() {
-        // Lógica para incrementar o resetear racha basada en la fecha actual vs ultimoLogin
-        this.rachaDias++;
+        if (ultimoLogin == null) {
+            this.rachaDias = 1;
+            return;
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+        long diasDiferencia = java.time.temporal.ChronoUnit.DAYS.between(ultimoLogin.toLocalDate(), ahora.toLocalDate());
+
+        if (diasDiferencia == 1) {
+            // Logueó ayer, incrementamos racha
+            this.rachaDias++;
+        } else if (diasDiferencia > 1) {
+            // Pasó más de un día, perdio la racha
+            this.rachaDias = 1;
+        }
+        // Si diasDiferencia == 0 (mismo día), no hacemos nada con el contador
+    }
+
+    public boolean esPrimerLoginDelDia() {
+        if (ultimoLogin == null) return true;
+        return !ultimoLogin.toLocalDate().equals(LocalDateTime.now().toLocalDate());
     }
 }

@@ -103,4 +103,32 @@ public class ChatPersistenceAdapter implements ChatRepository {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public java.util.Optional<GrupoChat> findGrupoById(Long id) {
+        return grupoChatRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void agregarMiembroAlGrupo(Long grupoId, Long usuarioId) {
+        var grupo = grupoChatRepository.findById(grupoId).orElseThrow();
+        var usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+        
+        UsuarioGrupoEntity ug = UsuarioGrupoEntity.builder()
+                .id(new UsuarioGrupoId(usuarioId, grupoId))
+                .usuario(usuario)
+                .grupo(grupo)
+                .rol(com.stinjoss.chat.websocket.chat_websocket.infrastructure.persistence.entity.enums.RolGrupo.MIEMBRO)
+                .build();
+        
+        usuarioGrupoRepository.save(ug);
+    }
+
+    @Override
+    public List<GrupoChat> buscarGruposPorNombre(String nombre) {
+        return grupoChatRepository.findByNombreContainingIgnoreCase(nombre).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

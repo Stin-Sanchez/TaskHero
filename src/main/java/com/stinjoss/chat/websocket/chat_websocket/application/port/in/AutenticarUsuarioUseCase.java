@@ -5,4 +5,6 @@ import com.stinjoss.chat.websocket.chat_websocket.application.dto.AuthResponse;
 
 public interface AutenticarUsuarioUseCase {
     AuthResponse autenticar(LoginRequest request);
+    void solicitarRecuperacion(String email);
+    void resetearPassword(String email, String token, String nuevaPassword);
 }

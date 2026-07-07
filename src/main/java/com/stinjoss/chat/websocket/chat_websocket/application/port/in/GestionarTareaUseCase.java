@@ -11,4 +11,5 @@ public interface GestionarTareaUseCase {
     void eliminarTarea(Long usuarioId, Long tareaId);
     List<Tarea> listarTareasPorUsuario(Long usuarioId);
     Tarea marcarComoCompletada(Long usuarioId, Long tareaId);
+    com.stinjoss.chat.websocket.chat_websocket.application.dto.EstadisticasResponse obtenerEstadisticas(Long usuarioId);
 }

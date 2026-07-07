@@ -1,190 +1,231 @@
+/* 
+   TASKHERO PRODUCT OVERHAUL: NEO KINPAKU COMMAND CENTER
+   Architectural Standards: Impeccable v2.2 + Emil Design + Design Taste
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700&family=Alumni+Sans+Pinstripe&family=Alumni+Sans:wght@400;600&family=JetBrains+Mono:wght@500&display=swap');
+
 :root {
-    /* Facebook Light Palette */
-    --bg-color: #F0F2F5;
-    --card-bg: #FFFFFF;
-    --text-main: #050505;
-    --text-muted: #65676B;
-    --hero-primary: #1877F2;
-    --hero-primary-hover: #166FE5;
-    --hero-accent: #1877F2;
-    --border-color: #CED0D4;
-    --input-bg: #F0F2F5;
-    --icon-color: #050505;
-    --chat-bubble-me: #0084FF;
-    --chat-bubble-other: #E4E6EB;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    /* --- IMPECCABLE TOKENS --- */
+    --ks-gold: oklch(84% 0.19 80.46);
+    --ks-gold-rich: oklch(77% 0.13 82);
+    --ks-gold-deep: oklch(61% 0.085 78);
+    --ks-patina: oklch(70% 0.12 188);
+    --ks-patina-deep: oklch(49% 0.08 188);
+    
+    --ks-lacquer: oklch(7% 0.006 95);
+    --ks-lacquer-deep: oklch(4% 0.004 95);
+    --ks-raised: oklch(11% 0.006 95);
+    --ks-graphite: oklch(15% 0.008 95);
+    --ks-graphite-2: oklch(19% 0.008 95);
+
+    --ks-champagne: oklch(91% 0 0);
+    --ks-text-warm: oklch(88% 0 0);
+    --ks-text-muted: oklch(72% 0 0);
+    --ks-text-faint: oklch(62% 0 0);
+    
+    --ks-rule: oklch(78% 0 0 / 0.12);
+    --ks-rule-strong: oklch(74% 0.09 82 / 0.4);
+    
+    /* --- EMIL PHYSICS --- */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --duration-standard: 250ms;
+    --duration-fast: 160ms;
 }
 
-[data-theme='dark'] {
-    /* Facebook Dark Palette */
-    --bg-color: #18191A;
-    --card-bg: #242526;
-    --text-main: #E4E6EB;
-    --text-muted: #B0B3B8;
-    --hero-primary: #2D88FF;
-    --hero-primary-hover: #1877F2;
-    --hero-accent: #2D88FF;
-    --border-color: #3E4042;
-    --input-bg: #3A3B3C;
-    --icon-color: #E4E6EB;
-    --chat-bubble-me: #0084FF;
-    --chat-bubble-other: #3A3B3C;
-    --shadow: 0 4px 20px rgba(0,0,0,0.5);
+/* Base Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    min-height: 100vh;
+    background-color: var(--ks-lacquer);
+    color: var(--ks-text-warm);
+    font-family: 'Albert Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden; /* App feel: prevent body scroll, use container scroll */
 }
 
-/* --- CORRECCIÓN CRÍTICA DE VISIBILIDAD --- */
-/* Forzamos color de texto en todos los elementos base, incluyendo inputs */
-h1, h2, h3, h4, h5, h6, .navbar-brand, .nav-link, span:not(.badge), p, div:not(.message-bubble-me), label, input, textarea, select {
-    color: var(--text-main) !important;
+/* Typography Hierarchy (Taste Rule 1) */
+h1, .ks-display {
+    font-family: 'Alumni Sans Pinstripe', sans-serif;
+    font-weight: 300;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+    color: var(--ks-champagne);
 }
 
-/* Placeholder corregido para visibilidad en modo oscuro */
-::placeholder {
-    color: var(--text-muted) !important;
-    opacity: 1;
-}
-::-webkit-input-placeholder { color: var(--text-muted) !important; }
-:-ms-input-placeholder { color: var(--text-muted) !important; }
-
-/* Texto Muted */
-.text-muted, small, .small {
-    color: var(--text-muted) !important;
+h2, .ks-headline {
+    font-family: 'Alumni Sans Pinstripe', sans-serif;
+    font-weight: 600;
+    font-size: 2rem;
+    color: var(--ks-champagne);
 }
 
-/* Forzamos que los iconos cambien con el tema */
-i, .bi {
-    color: var(--icon-color) !important;
+.ks-wordmark {
+    font-family: 'Alumni Sans', sans-serif;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ks-gold);
 }
 
-/* Excepción para elementos con fondo primario o burbujas propias */
-.btn-primary, .message-bubble-me, .badge, .bg-primary, .progress-bar {
-    color: #ffffff !important;
+.ks-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
 }
 
-/* --- COMPONENTES --- */
-
-.navbar {
-    background-color: var(--card-bg) !important;
-    border-bottom: 1px solid var(--border-color);
+/* --- App Layout (Product Architecture) --- */
+.ks-app-container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: 100dvh;
+    width: 100vw;
 }
 
-.card, .modal-content {
-    background-color: var(--card-bg) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    box-shadow: var(--shadow) !important;
+/* Sidebar (Restraint in Chrome) */
+.ks-sidebar {
+    background-color: var(--ks-lacquer-deep);
+    border-right: 1px solid var(--ks-rule);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Ensure full height */
+    position: relative;
 }
 
-.card-header, .card-footer, .modal-header, .modal-footer {
-    background-color: var(--card-bg) !important;
-    border-color: var(--border-color) !important;
-}
-
-/* Búsqueda (Header) */
-.input-group-text {
-    background-color: var(--input-bg) !important;
-    border: none !important;
-}
-
-#taskSearch {
-    background-color: var(--input-bg) !important;
-}
-
-/* Sidebar Fija */
-.sidebar-sticky {
-    position: -webkit-sticky;
-    position: sticky;
-    top: 5rem;
-    align-self: flex-start;
-    z-index: 10;
-    max-height: calc(100vh - 6rem);
+.ks-sidebar-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem 1.5rem;
     overflow-y: auto;
-    padding-right: 5px;
 }
 
-.sidebar-sticky::-webkit-scrollbar {
-    width: 4px;
+.ks-sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--ks-rule);
+    background-color: var(--ks-lacquer-deep);
 }
 
-.sidebar-sticky::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 10px;
+.ks-sidebar-header {
+    margin-bottom: 3rem;
 }
 
-/* Chat Styles */
-#chatMessages {
-    background-color: var(--bg-color) !important;
-    border-radius: 8px;
-    padding: 1rem;
-    height: 300px;
+.ks-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.ks-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    color: var(--ks-text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+
+.ks-nav-item:hover {
+    color: var(--ks-gold);
+    background-color: oklch(100% 0 0 / 0.03);
+}
+
+.ks-nav-item.active {
+    color: var(--ks-gold);
+    background-color: oklch(84% 0.19 80.46 / 0.08);
+    box-shadow: inset 0 0 0 1px var(--ks-gold-hairline);
+}
+
+/* Content Viewport (Brilliance in Texture) */
+.ks-viewport {
     overflow-y: auto;
-    border: 1px solid var(--border-color);
+    background: radial-gradient(at 0% 0%, oklch(84% 0.19 80.46 / 0.02) 0px, transparent 50%);
+    padding: 3rem 4rem;
 }
 
-.list-group-item {
-    background-color: var(--card-bg) !important;
-    color: var(--text-main) !important;
-    border-color: var(--border-color) !important;
+.ks-view {
+    display: none; /* Controlled by dashboard.js */
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.list-group-item:hover {
-    background-color: var(--input-bg) !important;
+.ks-view.active {
+    display: block;
+    animation: ks-view-enter var(--duration-standard) var(--ease-out);
 }
 
-/* Botones */
-.btn-primary {
-    background-color: var(--hero-primary) !important;
-    border: none !important;
+@keyframes ks-view-enter {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.btn-primary:hover {
-    background-color: var(--hero-primary-hover) !important;
+/* --- Components (Impeccable & Taste) --- */
+
+/* Bento Cards */
+.ks-card {
+    background-color: var(--ks-raised);
+    border: 1px solid var(--ks-rule);
+    border-radius: 4px;
+    padding: 2rem;
+    transition: border-color var(--duration-standard) var(--ease-out);
 }
 
-.btn-light {
-    background-color: var(--input-bg) !important;
-    border: 1px solid var(--border-color) !important;
+.ks-card:hover {
+    border-color: var(--ks-rule-strong);
+}
+
+/* Primary Actions */
+.ks-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 2px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-out), filter 0.2s;
+    border: none;
+    font-family: 'Albert Sans', sans-serif;
+}
+
+.ks-btn:active { transform: scale(0.97); }
+
+.ks-btn-primary {
+    background-color: var(--ks-gold);
+    color: var(--ks-lacquer-deep);
+}
+
+.ks-btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--ks-rule-strong);
+    color: var(--ks-gold);
 }
 
 /* Inputs */
-.form-control, .form-select {
-    background-color: var(--input-bg) !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-color) !important;
-}
-
-/* Burbujas de Chat Mejoradas */
-.message-bubble-me {
-    background-color: var(--chat-bubble-me) !important;
-    border-radius: 18px 18px 0 18px !important;
-    padding: 0.6rem 1rem;
-}
-
-.message-bubble-other {
-    background-color: var(--chat-bubble-other) !important;
-    border-radius: 18px 18px 18px 0 !important;
-    padding: 0.6rem 1rem;
-}
-
-/* Badge de Nivel */
-#levelBadge, .badge.bg-primary {
-    background-color: var(--hero-primary) !important;
-}
-
-.xp-progress {
-    background-color: var(--border-color);
-    height: 8px;
+.ks-input {
+    background-color: var(--ks-graphite);
+    border: 1px solid var(--ks-rule);
+    color: var(--ks-champagne);
+    padding: 0.75rem 1rem;
     border-radius: 4px;
+    width: 100%;
+    transition: border-color 0.2s;
 }
 
-#xpBar {
-    background: var(--hero-primary);
+.ks-input:focus {
+    outline: none;
+    border-color: var(--ks-gold);
 }

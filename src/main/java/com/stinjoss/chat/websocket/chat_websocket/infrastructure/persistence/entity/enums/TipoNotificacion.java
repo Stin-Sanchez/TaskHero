@@ -5,5 +5,7 @@ public enum TipoNotificacion {
     NIVEL_SUBIDO,
     RACHA_MANTENIDA,
     MENSAJE_RECIBIDO,
+    LOGRO_DESBLOQUEADO,
+    INVITACION_GREMIO,
     SISTEMA
 }

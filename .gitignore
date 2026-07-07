@@ -34,3 +34,6 @@ build/
 
 # Configuración local y secretos
 src/main/resources/application.properties
+
+# Documentos privados
+*.pdf

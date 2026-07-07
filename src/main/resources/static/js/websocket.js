@@ -181,15 +181,50 @@ function handleIncomingNotification(notif) {
     $("#notifBadge").text(unreadCount).removeClass("d-none");
 
     const list = $("#notificationList");
-    if (list.find(".small").length > 0) list.empty();
+    if (list.find(".bi-inbox").length > 0) list.empty();
     
+    let actionBtn = '';
+    if (notif.tipo === 'INVITACION_GREMIO') {
+        const match = notif.mensaje.match(/\[GRP:(\d+)\]/);
+        if (match) {
+            const guildId = match[1];
+            const cleanMsg = notif.mensaje.replace(/\[GRP:\d+\]/, '');
+            notif.mensaje = cleanMsg;
+            actionBtn = `<button class="btn btn-xs btn-success mt-2 py-0 px-2 fw-bold" onclick="acceptGuildInvite(${guildId}, ${notif.id})">Unirse</button>`;
+        }
+    }
+
     list.prepend(`
-        <li class="list-group-item list-group-item-action border-0 py-2 small">
-            <i class="bi bi-stars text-primary me-2"></i>${notif.mensaje}
+        <li class="list-group-item list-group-item-action border-0 py-3 small">
+            <div class="d-flex gap-2">
+                <i class="bi bi-stars text-primary"></i>
+                <div>
+                    <div>${notif.mensaje}</div>
+                    ${actionBtn}
+                </div>
+            </div>
         </li>
     `);
 
     if (typeof checkLevelAndUnlockFeatures === 'function') {
         checkLevelAndUnlockFeatures();
     }
+}
+
+function appendMessage(msg) {
+    const isMe = msg.remitenteId == myUserId;
+    const side = isMe ? 'margin-left: auto; text-align: right;' : 'margin-right: auto;';
+    const color = isMe ? 'var(--ks-gold)' : 'var(--ks-text-warm)';
+    const bg = isMe ? 'var(--ks-graphite-2)' : 'var(--ks-graphite)';
+
+    $("#chatMessages").append(`
+        <div style="margin-bottom: 1.5rem; max-width: 80%; ${side}">
+            ${!isMe ? `<div class="ks-mono" style="font-size: 0.55rem; color: var(--ks-gold); margin-bottom: 4px;">${escapeHtml(msg.remitenteNombre)}</div>` : ''}
+            <div class="ks-card" style="padding: 0.75rem 1rem; background: ${bg}; border-radius: 4px; display: inline-block; text-align: left; border-color: ${isMe ? 'var(--ks-gold)' : 'var(--ks-rule)'};">
+                <div style="color: ${color}; font-size: 0.9rem;">${escapeHtml(msg.contenido)}</div>
+            </div>
+            <div class="ks-mono" style="font-size: 0.5rem; color: var(--ks-text-faint); margin-top: 4px;">${new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+        </div>
+    `);
+    $("#chatMessages").scrollTop($("#chatMessages")[0].scrollHeight);
 }

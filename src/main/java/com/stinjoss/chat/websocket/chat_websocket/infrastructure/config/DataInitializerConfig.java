@@ -16,12 +16,11 @@ public class DataInitializerConfig implements CommandLineRunner {
     public void run(String... args) {
         if (nivelRepository.count() == 0) {
             nivelRepository.save(NivelEntity.builder().numeroNivel(1).xpRequerido(0).funcionDesbloqueada("Funciones básicas").descripcion("Nivel inicial").build());
-            nivelRepository.save(NivelEntity.builder().numeroNivel(2).xpRequerido(50).funcionDesbloqueada("Más misiones").descripcion("Aprendiz").build());
-            nivelRepository.save(NivelEntity.builder().numeroNivel(3).xpRequerido(150).funcionDesbloqueada("Categorías").descripcion("Héroe Novato").build());
-            nivelRepository.save(NivelEntity.builder().numeroNivel(4).xpRequerido(300).funcionDesbloqueada("Prioridades").descripcion("Guerrero").build());
-            nivelRepository.save(NivelEntity.builder().numeroNivel(5).xpRequerido(500).xpRequerido(500).funcionDesbloqueada("Chat del Gremio").descripcion("Comandante").build());
-            nivelRepository.save(NivelEntity.builder().numeroNivel(10).xpRequerido(2000).funcionDesbloqueada("Estadísticas").descripcion("Leyenda").build());
-            System.out.println(">> Niveles de gamificación inicializados en la base de datos.");
+            nivelRepository.save(NivelEntity.builder().numeroNivel(3).xpRequerido(200).funcionDesbloqueada("Categorías y Prioridades Avanzadas").descripcion("Héroe Novato").build());
+            nivelRepository.save(NivelEntity.builder().numeroNivel(5).xpRequerido(500).funcionDesbloqueada("Chat entre amigos habilitado").descripcion("Comandante").build());
+            nivelRepository.save(NivelEntity.builder().numeroNivel(8).xpRequerido(1000).funcionDesbloqueada("Grupos de estudio y colaboración").descripcion("Maestro").build());
+            nivelRepository.save(NivelEntity.builder().numeroNivel(10).xpRequerido(2000).funcionDesbloqueada("Estadísticas y exportación").descripcion("Leyenda").build());
+            System.out.println(">> Niveles de gamificación sincronizados con el Anteproyecto.");
         }
     }
 }

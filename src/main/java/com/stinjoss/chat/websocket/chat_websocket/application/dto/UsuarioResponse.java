@@ -23,6 +23,7 @@ public class UsuarioResponse {
     private boolean isPremium;
     private LocalDateTime ultimoLogin;
     private List<Long> amigosIds;
+    private String avatarUrl;
 
     public static UsuarioResponse fromDomain(Usuario usuario) {
         return UsuarioResponse.builder()
@@ -35,6 +36,7 @@ public class UsuarioResponse {
                 .isPremium(usuario.isPremium())
                 .ultimoLogin(usuario.getUltimoLogin())
                 .amigosIds(usuario.getAmigosIds())
+                .avatarUrl(usuario.getAvatarUrl())
                 .build();
     }
 }

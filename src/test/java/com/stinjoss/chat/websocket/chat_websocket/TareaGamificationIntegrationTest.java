@@ -74,9 +74,11 @@ class TareaGamificationIntegrationTest {
     @DisplayName("Al completar una tarea, el usuario debe ganar XP")
     void ganarXpAlCompletarTarea() throws Exception {
         // 1. Crear Tarea
+        // BAJA: prioridad ALTA/MEDIA requiere Nivel 2+/3+ (regla de gamificación en TareaService) y otorga XP distinto a XP_BASE;
+        // este usuario recién registrado está en Nivel 1 y el test valida el caso base (XP_BASE).
         TareaRequest tareaReq = TareaRequest.builder()
                 .titulo("Tarea de prueba")
-                .prioridad(Prioridad.ALTA)
+                .prioridad(Prioridad.BAJA)
                 .build();
 
         MvcResult resultTarea = mockMvc.perform(post("/api/tareas")
@@ -94,9 +96,9 @@ class TareaGamificationIntegrationTest {
                 .header("Authorization", token))
                 .andExpect(status().isOk());
 
-        // 3. Verificar XP del usuario (XP_LOGIN_DIARIO(5) + XP_TAREA_COMPLETADA(10) = 15)
-        // Nota: El login diario se dispara en el AuthService.autenticar
+        // 3. Verificar XP del usuario (solo XP_TAREA_COMPLETADA(10); el bono de login diario no
+        // aplica el mismo día del registro, ver FullFlowIntegrationTest)
         Usuario usuarioActualizado = usuarioRepository.findById(usuarioId).get();
-        assertEquals(15, usuarioActualizado.getXpTotal());
+        assertEquals(10, usuarioActualizado.getXpTotal());
     }
 }

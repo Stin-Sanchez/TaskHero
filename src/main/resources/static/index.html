@@ -3,58 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskHero - Iniciar Sesión</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>TaskHero | Acceso al Sistema</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/login.css">
 </head>
-<body class="bg-light">
-    <div class="container d-flex justify-content-center align-items-center vh-100">
-        <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
-            <div class="text-center mb-4">
-                <h1 class="h3 mb-3 fw-bold text-primary">TaskHero</h1>
-                <p class="text-muted">Gestiona tus tareas y sube de nivel</p>
+<body style="background-color: var(--ks-lacquer);">
+
+<div class="login-wrapper" style="display: flex; justify-content: center; align-items: center; min-height: 100dvh; background: radial-gradient(circle at center, oklch(84% 0.19 80.46 / 0.05) 0%, transparent 70%);">
+    
+    <div class="ks-card" style="width: 100%; max-width: 400px; padding: 4rem 3rem; border-color: var(--ks-rule-strong); box-shadow: 0 40px 100px oklch(0% 0 0 / 0.5);">
+        
+        <header style="text-align: center; margin-bottom: 3rem;">
+            <div class="ks-mono" style="color: var(--ks-gold); font-size: 0.6rem; margin-bottom: 0.5rem;">PROTOCOLO DE ACCESO</div>
+            <h1 class="ks-wordmark" style="font-size: 2rem;">TaskHero</h1>
+        </header>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm">
+            <div style="margin-bottom: 1.5rem;">
+                <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">IDENTIFICACIÓN</label>
+                <input type="email" id="loginEmail" class="ks-input" required placeholder="heroe@taskhero.com">
             </div>
-
-            <!-- Login Form -->
-            <form id="loginForm">
-                <div class="mb-3">
-                    <label class="form-label">Correo Electrónico</label>
-                    <input type="email" id="loginEmail" class="form-control" required placeholder="tu@ejemplo.com">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" id="loginPassword" class="form-control" required placeholder="******">
-                </div>
-                <button type="submit" class="btn btn-primary w-100 py-2">Entrar al Calabozo</button>
-            </form>
-
-            <div class="text-center mt-4">
-                <p class="mb-0">¿No tienes cuenta? <a href="#" id="showRegister">Regístrate aquí</a></p>
+            <div style="margin-bottom: 2rem;">
+                <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">LLAVE DE ACCESO</label>
+                <input type="password" id="loginPassword" class="ks-input" required placeholder="••••••••">
             </div>
+            <button type="submit" class="ks-btn ks-btn-primary" id="loginBtn" style="width: 100%; padding: 1rem;">
+                SINCRONIZAR
+            </button>
+        </form>
 
-            <!-- Register Form (Hidden by default) -->
-            <form id="registerForm" class="d-none">
-                <div class="mb-3">
-                    <label class="form-label">Nombre de Héroe</label>
-                    <input type="text" id="regNombre" class="form-control" required>
+        <!-- REGISTER FORM (Hidden) -->
+        <form id="registerForm" class="d-none">
+            <div style="margin-bottom: 1.25rem;">
+                <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">NOMBRE DE GUERRA</label>
+                <input type="text" id="regNombre" class="ks-input" required>
+            </div>
+            <div style="margin-bottom: 1.25rem;">
+                <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">CANAL (EMAIL)</label>
+                <input type="email" id="regEmail" class="ks-input" required>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">NUEVA LLAVE</label>
+                <input type="password" id="regPassword" class="ks-input" required>
+                <div class="strength-wrap" style="height: 2px; background: var(--ks-graphite-2); margin-top: 0.5rem;">
+                    <div id="strengthBar" class="strength-fill" style="height: 100%; background: var(--ks-gold); width: 0%;"></div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="regEmail" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" id="regPassword" class="form-control" required minlength="6">
-                </div>
-                <button type="submit" class="btn btn-success w-100">Crear Héroe</button>
-                <div class="text-center mt-3">
-                    <a href="#" id="showLogin">Volver al Login</a>
-                </div>
-            </form>
+            </div>
+            <button type="submit" class="ks-btn ks-btn-primary" id="registerBtn" style="width: 100%; padding: 1rem;">
+                FUNDAR CUENTA
+            </button>
+        </form>
+
+        <div style="height: 1px; background: var(--ks-rule); margin: 2rem 0;"></div>
+
+        <div style="text-align: center; font-size: 0.75rem;">
+            <div id="loginToggleText">
+                <span class="ks-mono" style="color: var(--ks-text-faint);">¿SIN ACCESO?</span> 
+                <span class="ks-mono" style="color: var(--ks-gold); cursor: pointer; margin-left: 0.5rem;" id="showRegister">REGISTRARSE</span>
+            </div>
+            <div id="registerToggleText" class="d-none">
+                <span class="ks-mono" style="color: var(--ks-text-faint);">¿CUENTA ACTIVA?</span> 
+                <span class="ks-mono" style="color: var(--ks-gold); cursor: pointer; margin-left: 0.5rem;" id="showLogin">ENTRAR</span>
+            </div>
         </div>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="js/auth.js"></script>
+<div id="authToast" class="toast-container position-fixed bottom-0 end-0 p-4">
+    <div id="liveToast" class="toast ks-card" role="alert" style="border-color: var(--ks-gold-hairline);">
+        <div class="toast-header" style="background: transparent; border-bottom: 1px solid var(--ks-rule);">
+            <strong class="ks-mono me-auto" style="font-size: 0.75rem;">TaskHero</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body ks-mono" id="toastMessage" style="color: var(--ks-champagne);"></div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/auth.js"></script>
 </body>
 </html>

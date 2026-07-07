@@ -48,4 +48,16 @@ public class ChatRestController {
     public ResponseEntity<List<GrupoChat>> listarGrupos() {
         return ResponseEntity.ok(chatUseCase.listarGruposPorUsuario(getAuthenticatedUserId()));
     }
+
+    @PostMapping("/grupos/{grupoId}/invitar/{receptorId}")
+    public ResponseEntity<Void> invitar(@PathVariable Long grupoId, @PathVariable Long receptorId) {
+        chatUseCase.invitarMiembro(getAuthenticatedUserId(), receptorId, grupoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/grupos/{grupoId}/aceptar")
+    public ResponseEntity<Void> aceptar(@PathVariable Long grupoId) {
+        chatUseCase.aceptarInvitacion(getAuthenticatedUserId(), grupoId);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -22,7 +22,10 @@ public class UsuarioMapper {
                 .rachaDias(entity.getRachaDias())
                 .isPremium(entity.getIsPremium())
                 .ultimoLogin(entity.getUltimoLogin())
-                .amigosIds(new ArrayList<>()) // Se cargaría en un servicio aparte si es necesario
+                .amigosIds(new ArrayList<>())
+                .resetPasswordToken(entity.getResetPasswordToken())
+                .tokenExpiration(entity.getTokenExpiration())
+                .avatarUrl(entity.getAvatarUrl())
                 .build();
     }
 
@@ -39,6 +42,9 @@ public class UsuarioMapper {
                 .rachaDias(domain.getRachaDias())
                 .isPremium(domain.isPremium())
                 .ultimoLogin(domain.getUltimoLogin())
+                .resetPasswordToken(domain.getResetPasswordToken())
+                .tokenExpiration(domain.getTokenExpiration())
+                .avatarUrl(domain.getAvatarUrl())
                 .build();
     }
 }

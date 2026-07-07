@@ -1,0 +1,110 @@
+/* 
+   TASKHERO LOGIN MODERN CRAFT
+*/
+
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100dvh;
+    padding: 1.5rem;
+    background: 
+        radial-gradient(at 0% 0%, oklch(84% 0.19 80.46 / 0.03) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, oklch(70% 0.12 188 / 0.03) 0px, transparent 50%);
+}
+
+.login-bento {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1.5rem;
+    padding: 3rem;
+    box-shadow: var(--shadow-diffusion);
+}
+
+.login-header {
+    margin-bottom: 2.5rem;
+    text-align: left;
+}
+
+.login-header h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.input-container {
+    margin-bottom: 1.25rem;
+}
+
+.input-container label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-sub);
+}
+
+.input-container input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--zinc-200);
+    background: var(--zinc-50);
+    color: var(--text-main);
+    transition: all 0.2s var(--ease-out);
+}
+
+[data-theme='dark'] .input-container input {
+    border-color: var(--zinc-800);
+    background: var(--zinc-950);
+}
+
+.input-container input:focus {
+    outline: none;
+    border-color: var(--ks-gold);
+    box-shadow: 0 0 0 4px oklch(84% 0.19 80.46 / 0.1);
+}
+
+.auth-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    background: var(--zinc-950);
+    color: white;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s var(--ease-out);
+    z-index: 1000;
+}
+
+.auth-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.strength-wrap {
+    height: 4px;
+    background: var(--zinc-100);
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+[data-theme='dark'] .strength-wrap { background: var(--zinc-800); }
+
+.strength-fill {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.st-weak { background: #ef4444; }
+.st-med { background: var(--ks-gold); }
+.st-strong { background: var(--ks-patina); }
