@@ -127,7 +127,7 @@
                     <div class="ks-card" style="border-color: var(--ks-rule-strong);">
                         <div class="ks-mono" style="color: var(--ks-gold); margin-bottom: 1.5rem;">RANGO OPERATIVO</div>
                         <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1rem;">
-                            <span style="font-size: 4rem; font-weight: 300; font-family: 'Alumni Sans Pinstripe'; line-height: 1;" id="sidebarLevel">1</span>
+                            <span style="font-size: 4rem; font-weight: 800; font-family: 'Sora', sans-serif; line-height: 1;" id="sidebarLevel">1</span>
                             <span id="sidebarLevelName" class="ks-mono" style="color: var(--ks-text-muted);">Aprendiz</span>
                         </div>
                         <div style="height: 4px; background: var(--ks-graphite-2); border-radius: 2px; overflow: hidden; margin-bottom: 1rem;">
@@ -160,7 +160,7 @@
 
         <!-- VIEW: COMMS (Chat & Guilds) -->
         <section id="view-comms" class="ks-view">
-            <div style="display: grid; grid-template-columns: 320px 1fr; gap: 2rem; height: 600px;">
+            <div style="display: grid; grid-template-columns: 320px 1fr; gap: 2rem; height: 600px; min-height: 0; overflow: hidden;">
                 <!-- Social Sidebar -->
                 <div class="ks-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
                     <div style="padding: 1.5rem; border-bottom: 1px solid var(--ks-rule);">
@@ -175,18 +175,18 @@
                             <div style="padding: 1.5rem;">
                                 <div class="ks-mono mb-3" style="font-size: 0.6rem; color: var(--ks-text-muted);">GREMIOS ACTIVOS</div>
                                 <div id="groupsList"></div>
-                                <button class="ks-btn ks-btn-secondary mt-3" style="width: 100%; font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#groupModal">FUNDAR GREMIO</button>
+                                <button class="ks-btn ks-btn-secondary mt-3" style="width: 100%; font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#groupModal"><i class="bi bi-flag-fill"></i> FUNDAR GREMIO</button>
                                 
                                 <div class="ks-mono mt-5 mb-3" style="font-size: 0.6rem; color: var(--ks-text-muted);">ALIADOS CONECTADOS</div>
                                 <div id="friendsList"></div>
-                                <button class="ks-btn ks-btn-secondary mt-3" style="width: 100%; font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#recruitModal">RECLUTAR</button>
+                                <button class="ks-btn ks-btn-secondary mt-3" style="width: 100%; font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#recruitModal"><i class="bi bi-person-plus-fill"></i> RECLUTAR</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Active Chat Area -->
-                <div id="activeChatWindow" class="ks-card d-none" style="padding: 0; display: flex; flex-direction: column;">
+                <div id="activeChatWindow" class="ks-card d-none" style="padding: 0; display: flex; flex-direction: column; min-height: 0;">
                     <div style="padding: 1.25rem; border-bottom: 1px solid var(--ks-rule); display: flex; justify-content: space-between; align-items: center;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <div style="width: 8px; height: 8px; background: var(--ks-patina); border-radius: 50%;"></div>
@@ -194,10 +194,10 @@
                         </div>
                         <button class="ks-btn" onclick="closeChat()" style="padding: 0; background: transparent; color: var(--ks-text-faint);">&times;</button>
                     </div>
-                    <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 2rem;"></div>
+                    <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 2rem; min-height: 0;"></div>
                     <form id="chatForm" style="padding: 1.25rem; border-top: 1px solid var(--ks-rule); display: flex; gap: 1rem;">
-                        <input type="text" id="chatInput" class="ks-input" placeholder="Transmitir mensaje táctico...">
-                        <button type="submit" class="ks-btn ks-btn-primary" style="padding: 0 1.5rem;"><i class="bi bi-send-fill"></i></button>
+                        <textarea id="chatInput" class="ks-input" placeholder="Transmitir mensaje táctico..." rows="1" style="resize: none; max-height: 120px; overflow-y: auto; line-height: 1.4;"></textarea>
+                        <button type="submit" class="ks-btn ks-btn-primary" style="padding: 0 1.5rem; align-self: flex-end;"><i class="bi bi-send-fill"></i></button>
                     </form>
                 </div>
                 
