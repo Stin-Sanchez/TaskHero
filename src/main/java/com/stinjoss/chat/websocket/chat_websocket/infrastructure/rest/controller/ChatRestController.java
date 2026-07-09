@@ -36,11 +36,11 @@ public class ChatRestController {
 
     @GetMapping("/grupo/{grupoId}")
     public ResponseEntity<List<Mensaje>> obtenerHistorialGrupo(@PathVariable Long grupoId) {
-        return ResponseEntity.ok(chatUseCase.obtenerHistorialGrupo(grupoId));
+        return ResponseEntity.ok(chatUseCase.obtenerHistorialGrupo(getAuthenticatedUserId(), grupoId));
     }
 
     @PostMapping("/grupos")
-    public ResponseEntity<GrupoChat> crearGrupo(@RequestBody GrupoRequest request) {
+    public ResponseEntity<GrupoChat> crearGrupo(@jakarta.validation.Valid @RequestBody GrupoRequest request) {
         return ResponseEntity.ok(chatUseCase.crearGrupo(request.getNombre(), getAuthenticatedUserId(), request.getMiembrosIds()));
     }
 

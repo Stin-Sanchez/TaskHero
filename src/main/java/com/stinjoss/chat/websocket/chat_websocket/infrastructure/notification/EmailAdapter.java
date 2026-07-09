@@ -45,6 +45,21 @@ public class EmailAdapter implements EmailPort {
 
     @Override
     @Async
+    public void enviarCorreoRecordatorio(String destinatario, String mensaje) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(destinatario);
+        message.setSubject("Recordatorio de Misión - TaskHero");
+        message.setText(mensaje + "\n\n¡No dejes que tu racha se apague, Héroe!");
+
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Error al enviar email de recordatorio: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Async
     public void enviarCorreoRecuperacion(String destinatario, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(destinatario);

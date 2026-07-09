@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "taskhero-backend",
+      "runtimeExecutable": "mvnw.cmd",
+      "runtimeArgs": ["spring-boot:run"],
+      "port": 8080
+    }
+  ]
+}

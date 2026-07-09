@@ -123,28 +123,40 @@ $(document).ready(function() {
         const btn = $(this).find('button[type="submit"]');
         setButtonLoading(btn, true);
 
+        const taskId = $("#taskId").val();
         const data = {
             titulo: $("#taskTitle").val(),
+            descripcion: $("#taskDescription").val() || null,
+            categoria: $("#taskCategory").val() || null,
             prioridad: $("#taskPriority").val(),
             fechaLimite: $("#taskDueDate").val() || null
         };
 
         $.ajax({
-            url: `${API_BASE}/tareas`,
-            type: "POST",
+            url: taskId ? `${API_BASE}/tareas/${taskId}` : `${API_BASE}/tareas`,
+            type: taskId ? "PUT" : "POST",
             contentType: "application/json",
             data: JSON.stringify(data),
             success: function() {
                 $("#taskModal").modal('hide');
-                $("#taskForm")[0].reset();
-                showToast("¡Misión desplegada!", "success");
+                showToast(taskId ? "Misión actualizada" : "¡Misión desplegada!", "success");
                 loadTasks();
             },
-            error: function() {
-                showToast("No se pudo desplegar la misión", "error");
+            error: function(xhr) {
+                const fallback = taskId ? "No se pudo actualizar la misión" : "No se pudo desplegar la misión";
+                showToast(xhr.responseJSON?.message || fallback, "error");
             },
             complete: () => setButtonLoading(btn, false)
         });
+    });
+
+    $("#taskModal").on("hidden.bs.modal", function() {
+        $("#taskForm")[0].reset();
+        $("#taskId").val('');
+        $("#taskDescription").val('');
+        $("#taskCategory").val('');
+        $("#taskModalTitle").text("Protocolo de Nueva Misión");
+        $("#taskFormSubmitBtn").text("DESPLEGAR MISIÓN");
     });
 
     $("#editProfileForm").submit(function(e) {
@@ -274,7 +286,6 @@ $(document).ready(function() {
     // --- SOCIAL & LOGS ---
     $("#btnShowLogros").click(() => { $("#achievementsModal").modal('show'); loadAchievements(); });
     $("#btnMarkAllRead").click(markAllNotificationsRead);
-    $("#btnShowEventos").click(() => showToast("No hay eventos tácticos programados", "info"));
 
     $("#logoutBtn").click(() => {
         showToast("Finalizando enlace seguro...", "info");
@@ -343,8 +354,11 @@ function loadTasks() {
         type: "GET",
         success: function(tasks) {
             allTasks = tasks;
+            syncTimerClientStarts();
             renderTasks();
+            renderActiveTimerBar();
             updateStats();
+            renderOverviewCharts();
         }
     });
 }
@@ -355,8 +369,192 @@ function updateStats() {
     $("#statPending").text(allTasks.filter(t => !t.completada).length);
 }
 
+// ============================================
+// TABLERO: gráficos y parte de situación (calculados en el cliente, sin endpoints nuevos)
+// ============================================
+
+function renderOverviewCharts() {
+    renderPriorityChart();
+    renderCategoryChart();
+    renderMentorAdvice();
+}
+
+function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+// Barra fina, extremos redondeados, etiqueta directa (nombre + valor) en vez de tooltip:
+// con 3-6 barras como mucho, el valor siempre visible es mas claro que exigir hover.
+function chartBarRow(label, value, max, color) {
+    const pct = value > 0 ? Math.max(4, Math.round((value / max) * 100)) : 0;
+    return `
+        <div style="margin-bottom: 0.9rem;">
+            <div class="ks-mono" style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--ks-text-muted); margin-bottom: 0.35rem;">
+                <span>${escapeHtml(label)}</span><span style="color: var(--ks-text-warm); font-weight: 600;">${value}</span>
+            </div>
+            <div style="height: 8px; background: var(--ks-graphite-2); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: ${pct}%; background: ${color}; border-radius: 4px; transition: width 0.6s var(--ease-out);"></div>
+            </div>
+        </div>
+    `;
+}
+
+// Identidad (prioridad) -> color fijo por categoria, reutilizando el mismo mapeo que
+// los puntos de prioridad en la lista de misiones (nunca se reordena por ranking).
+function renderPriorityChart() {
+    const counts = { BAJA: 0, MEDIA: 0, ALTA: 0 };
+    allTasks.forEach(t => { if (t.prioridad in counts) counts[t.prioridad]++; });
+    const colors = { BAJA: 'var(--ks-text-muted)', MEDIA: 'var(--ks-gold)', ALTA: 'oklch(58% 0.15 35)' };
+    const max = Math.max(1, counts.BAJA, counts.MEDIA, counts.ALTA);
+
+    const html = ['BAJA', 'MEDIA', 'ALTA']
+        .map(key => chartBarRow(key, counts[key], max, colors[key]))
+        .join('');
+    $("#priorityChart").html(html);
+}
+
+// Magnitud (conteo por categoria) -> un solo hue (dorado), ordenado de mayor a menor;
+// se limita a las 5 categorias mas usadas para no repetir el anti-patron de lista larga.
+function renderCategoryChart() {
+    const counts = {};
+    allTasks.forEach(t => {
+        const cat = (t.categoria && t.categoria.trim()) ? t.categoria.trim().toUpperCase() : 'GENERAL';
+        counts[cat] = (counts[cat] || 0) + 1;
+    });
+
+    const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    if (entries.length === 0) {
+        $("#categoryChart").html('<div class="ks-mono opacity-50 small text-center py-4">Sin misiones aún</div>');
+        return;
+    }
+
+    const max = Math.max(1, ...entries.map(e => e[1]));
+    const html = entries.map(([label, value]) => chartBarRow(label, value, max, 'var(--ks-gold)')).join('');
+    $("#categoryChart").html(html);
+}
+
+// Reemplaza el texto estatico "Analizando..." por un resumen real calculado sobre
+// allTasks: prioriza avisar atrasos, luego vencimientos de hoy, luego el estado general.
+function renderMentorAdvice() {
+    const hoy = todayISO();
+    const pendientes = allTasks.filter(t => !t.completada);
+    const atrasadas = pendientes.filter(t => t.fechaLimite && t.fechaLimite < hoy);
+    const hoyVencen = pendientes.filter(t => t.fechaLimite && t.fechaLimite === hoy);
+
+    let mensaje;
+    if (atrasadas.length > 0) {
+        mensaje = `Tienes ${atrasadas.length} misión${atrasadas.length > 1 ? 'es' : ''} atrasada${atrasadas.length > 1 ? 's' : ''}. Es momento de retomar el mando.`;
+    } else if (hoyVencen.length > 0) {
+        mensaje = `${hoyVencen.length} misión${hoyVencen.length > 1 ? 'es' : ''} vence${hoyVencen.length > 1 ? 'n' : ''} hoy. Complétala${hoyVencen.length > 1 ? 's' : ''} para no perder la racha.`;
+    } else if (pendientes.length === 0) {
+        mensaje = "Tablero despejado, Comandante. Inicia una nueva misión cuando estés listo.";
+    } else {
+        mensaje = `${pendientes.length} misión${pendientes.length > 1 ? 'es' : ''} en curso, sin vencimientos próximos. Vas bien.`;
+    }
+    $("#mentorAdvice").text(mensaje);
+}
+
 const TASKS_PER_PAGE = 6;
 let currentTasksPage = 1;
+
+// Cronometros por tarea: un solo heartbeat global (independiente de la vista activa y de los
+// re-renders) evita que cambiar de vista "reinicie" el contador visualmente. `timerClientStart`
+// guarda, por tarea, el Date.now() del momento en que sincronizamos su base con el servidor;
+// solo se toca cuando el servidor confirma un cambio real (fetch/iniciar/pausar), nunca al re-pintar.
+const timerClientStart = {};
+let globalTimerHeartbeat = null;
+
+function syncTimerClientStarts() {
+    const activeIds = new Set();
+    allTasks.forEach(t => {
+        if (t.timerActivo) {
+            activeIds.add(t.id);
+            // Cada fetch trae tiempoInvertidoSegundos ya recalculado a este instante por el
+            // servidor, asi que el punto de partida local SIEMPRE debe reiniciarse a ahora;
+            // no hacerlo (solo la primera vez) duplicaba el tramo ya incluido en la nueva base.
+            timerClientStart[t.id] = Date.now();
+        }
+    });
+    Object.keys(timerClientStart).forEach(id => {
+        if (!activeIds.has(Number(id))) delete timerClientStart[id];
+    });
+    ensureGlobalTimerHeartbeat();
+}
+
+function ensureGlobalTimerHeartbeat() {
+    if (globalTimerHeartbeat) return;
+    globalTimerHeartbeat = setInterval(() => {
+        renderTimerDisplays();
+        renderActiveTimerBar();
+    }, 1000);
+}
+
+function computeLiveSeconds(task) {
+    if (!task.timerActivo) return task.tiempoInvertidoSegundos;
+    const start = timerClientStart[task.id] || Date.now();
+    return task.tiempoInvertidoSegundos + Math.floor((Date.now() - start) / 1000);
+}
+
+// Solo actualiza el texto de los cronometros ya pintados (si la vista Misiones esta activa);
+// no reconstruye el DOM, asi que no interfiere con paginacion/filtros en curso.
+function renderTimerDisplays() {
+    allTasks.filter(t => t.timerActivo).forEach(t => {
+        $(`.task-timer-display[data-task-id="${t.id}"]`).text(formatSeconds(computeLiveSeconds(t)));
+    });
+}
+
+function renderActiveTimerBar() {
+    const bar = $("#activeTimerBar").empty();
+    const activos = allTasks.filter(t => t.timerActivo);
+    activos.forEach(t => {
+        bar.append(`
+            <div class="ks-card" style="display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.9rem; border: 1px solid var(--ks-gold-hairline);">
+                <i class="bi bi-stopwatch-fill timer-pulse-dot" style="color: var(--ks-patina);"></i>
+                <span class="ks-mono" style="font-size: 0.65rem; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ks-text-muted);">${escapeHtml(t.titulo)}</span>
+                <span class="ks-mono header-timer-display" data-task-id="${t.id}" style="font-size: 0.8rem; font-weight: 600; color: var(--ks-gold);">${formatSeconds(computeLiveSeconds(t))}</span>
+                <button class="ks-btn ks-btn-timer-active" style="font-size: 0.6rem; padding: 0.3rem 0.6rem;" onclick="toggleTaskTimer(${t.id}, this)"><i class="bi bi-pause-fill"></i></button>
+            </div>
+        `);
+    });
+}
+
+function formatSeconds(totalSeconds) {
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    const pad = n => String(n).padStart(2, '0');
+    return h > 0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+}
+
+// Estado del timer -> boton claro segun UX: Iniciar Tarea / Pausar (en curso) / Reanudar
+function renderTimerControl(task) {
+    let btnClass, icon, label;
+    if (task.timerActivo) {
+        btnClass = 'ks-btn-timer-active';
+        icon = 'bi-pause-fill';
+        label = 'PAUSAR';
+    } else if (task.tiempoInvertidoSegundos > 0) {
+        btnClass = 'ks-btn-secondary';
+        icon = 'bi-play-fill';
+        label = 'REANUDAR';
+    } else {
+        btnClass = 'ks-btn-primary';
+        icon = 'bi-play-fill';
+        label = 'INICIAR TAREA';
+    }
+
+    return `
+        <div style="display: flex; align-items: center; gap: 0.85rem; margin-top: 0.75rem;">
+            <button class="ks-btn ${btnClass}" style="font-size: 0.7rem; padding: 0.45rem 1rem;" onclick="toggleTaskTimer(${task.id}, this)">
+                <i class="bi ${icon}"></i> ${label}
+            </button>
+            <span class="ks-mono task-timer-display" data-task-id="${task.id}" style="font-size: 0.8rem; color: var(--ks-gold); font-weight: 600;">${formatSeconds(computeLiveSeconds(task))}</span>
+            ${task.timerActivo ? `<span class="ks-mono timer-pulse-dot" style="font-size: 0.6rem; color: var(--ks-patina); display: inline-flex; align-items: center; gap: 0.3rem;"><i class="bi bi-circle-fill" style="font-size: 0.4rem;"></i> EN CURSO</span>` : ''}
+        </div>
+    `;
+}
 
 function renderTasks() {
     const container = $("#tasksContainer").empty();
@@ -380,19 +578,26 @@ function renderTasks() {
         const pClass = task.prioridad === 'ALTA' ? 'pr-high' : (task.prioridad === 'MEDIA' ? 'pr-med' : 'pr-low');
         const row = $(`
             <div class="task-row ks-enter ${task.completada ? 'completed' : ''}" style="animation-delay: ${index * 0.04}s">
-                <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div class="priority-mark ${pClass}"></div>
-                    <div>
+                <div style="display: flex; align-items: flex-start; gap: 1.5rem; min-width: 0; flex: 1;">
+                    <div class="priority-mark ${pClass}" style="flex-shrink: 0; margin-top: 0.3rem;"></div>
+                    <div style="min-width: 0; overflow-wrap: anywhere;">
                         <div class="${task.completada ? 'task-title-completed' : ''}" style="font-weight: 600;">
                             ${escapeHtml(task.titulo)}
                         </div>
-                        <div class="ks-mono" style="font-size: 0.6rem; color: var(--ks-text-faint); margin-top: 0.25rem;">
-                            ${task.prioridad}
+                        ${task.descripcion ? `<div class="ks-mono" style="font-size: 0.7rem; color: var(--ks-text-muted); margin-top: 0.4rem; white-space: pre-wrap; overflow-wrap: anywhere;">${escapeHtml(task.descripcion)}</div>` : ''}
+                        <div class="ks-mono" style="font-size: 0.6rem; color: var(--ks-text-faint); margin-top: 0.4rem;">
+                            ${task.prioridad}${task.categoria ? ` · ${escapeHtml(task.categoria).toUpperCase()}` : ''}
                         </div>
+                        ${!task.completada ? renderTimerControl(task) : `
+                        <div class="ks-mono" style="font-size: 0.65rem; color: var(--ks-text-faint); margin-top: 0.6rem;">
+                            <i class="bi bi-stopwatch"></i> ${formatSeconds(task.tiempoInvertidoSegundos)} invertidos
+                        </div>`}
                     </div>
                 </div>
-                <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
                     ${!task.completada ? `<button class="ks-btn ks-btn-secondary" style="font-size: 0.7rem;" onclick="completeTask(${task.id}, this)">COMPLETAR</button>` : `<span class="ks-mono text-patina" style="display: inline-flex; align-items: center; gap: 0.4rem;"><i class="bi bi-check-circle-fill"></i>LOGRADA</span>`}
+                    <button class="ks-btn ks-btn-secondary" title="Editar" style="font-size: 0.7rem; padding: 0.5rem 0.7rem;" onclick="editTask(${task.id})"><i class="bi bi-pencil-fill"></i></button>
+                    <button class="ks-btn ks-btn-secondary" title="Eliminar" style="font-size: 0.7rem; padding: 0.5rem 0.7rem;" onclick="deleteTask(${task.id}, this)"><i class="bi bi-trash-fill"></i></button>
                 </div>
             </div>
         `);
@@ -400,6 +605,36 @@ function renderTasks() {
     });
 
     if (totalPages > 1) renderTasksPagination(pagination, totalPages);
+}
+
+function toggleTaskTimer(id, btn) {
+    const task = allTasks.find(t => t.id === id);
+    if (!task) return;
+    const action = task.timerActivo ? 'pausar' : 'iniciar';
+
+    $(btn).prop("disabled", true);
+    $.ajax({
+        url: `${API_BASE}/tareas/${id}/timer/${action}`,
+        type: "PATCH",
+        success: function(updated) {
+            const idx = allTasks.findIndex(t => t.id === id);
+            if (idx !== -1) allTasks[idx] = updated;
+
+            if (updated.timerActivo) {
+                timerClientStart[updated.id] = Date.now();
+            } else {
+                delete timerClientStart[updated.id];
+            }
+            ensureGlobalTimerHeartbeat();
+
+            renderTasks();
+            renderActiveTimerBar();
+        },
+        error: function() {
+            showToast(`No se pudo ${action} el cronómetro`, "error");
+        },
+        complete: () => $(btn).prop("disabled", false)
+    });
 }
 
 function renderTasksPagination(pagination, totalPages) {
@@ -412,6 +647,57 @@ function renderTasksPagination(pagination, totalPages) {
     const next = $(`<button class="ks-btn ks-btn-secondary" style="padding: 0.5rem 1rem;" ${currentTasksPage === totalPages ? 'disabled' : ''}><i class="bi bi-chevron-right"></i></button>`);
     next.click(() => { currentTasksPage++; renderTasks(); });
     pagination.append(next);
+}
+
+function openNewTaskModal() {
+    $("#taskForm")[0].reset();
+    $("#taskId").val('');
+    $("#taskModalTitle").text("Protocolo de Nueva Misión");
+    $("#taskFormSubmitBtn").text("DESPLEGAR MISIÓN");
+    $("#taskModal").modal('show');
+}
+
+function editTask(id) {
+    const task = allTasks.find(t => t.id === id);
+    if (!task) return;
+
+    $("#taskId").val(task.id);
+    $("#taskTitle").val(task.titulo);
+    $("#taskDescription").val(task.descripcion || '');
+    $("#taskCategory").val(task.categoria || '');
+    $("#taskPriority").val(task.prioridad);
+    $("#taskDueDate").val(task.fechaLimite || '');
+    $("#taskModalTitle").text("Editar Misión");
+    $("#taskFormSubmitBtn").text("GUARDAR CAMBIOS");
+    $("#taskModal").modal('show');
+}
+
+function deleteTask(id, btn) {
+    showConfirm("¿Abandonar esta misión permanentemente? Esta acción no se puede deshacer.", function() {
+        $(btn).prop("disabled", true);
+        $.ajax({
+            url: `${API_BASE}/tareas/${id}`,
+            type: "DELETE",
+            success: function() {
+                showToast("Misión eliminada", "success");
+                loadDashboard();
+            },
+            error: function() {
+                $(btn).prop("disabled", false);
+                showToast("No se pudo eliminar la misión", "error");
+            }
+        });
+    });
+}
+
+// Dialogo Si/No reutilizable (reemplaza confirm() nativo para mantener la estetica de la app)
+function showConfirm(message, onConfirm) {
+    $("#confirmModalMessage").text(message);
+    $("#confirmModalYesBtn").off("click").on("click", function() {
+        $("#confirmModal").modal('hide');
+        onConfirm();
+    });
+    $("#confirmModal").modal('show');
 }
 
 function completeTask(id, btn) {
@@ -520,10 +806,37 @@ function acceptGuildInvite(grupoId, notifId) {
     });
 }
 
-// --- LOGROS (sin backend aún) ---
+// --- LOGROS ---
 function loadAchievements() {
-    // ponytail: no existe endpoint de logros en el backend todavía; se muestra estado vacío en vez de spinner infinito.
-    $("#achievementsList").html('<div class="col-12 text-center opacity-50 py-4"><i class="bi bi-hourglass-split fs-2 d-block mb-2"></i>Sistema de logros en desarrollo</div>');
+    const container = $("#achievementsList");
+    container.html('<div class="col-12 text-center opacity-50 py-4"><i class="bi bi-hourglass-split fs-2 d-block mb-2"></i>Cargando...</div>');
+
+    $.ajax({
+        url: `${API_BASE}/logros`,
+        type: "GET",
+        success: function(logros) {
+            container.empty();
+            logros.forEach(l => container.append(buildAchievementCard(l)));
+        },
+        error: function() {
+            container.html('<div class="col-12 text-center opacity-50 py-4">No se pudo cargar la sala de trofeos</div>');
+        }
+    });
+}
+
+function buildAchievementCard(logro) {
+    const opacity = logro.desbloqueado ? '1' : '0.35';
+    const fecha = logro.fechaObtenido ? new Date(logro.fechaObtenido).toLocaleDateString() : '';
+    return `
+        <div class="col-6 col-md-4">
+            <div class="ks-card text-center" style="padding: 1.25rem 0.75rem; opacity: ${opacity}; border: 1px solid ${logro.desbloqueado ? 'var(--ks-gold-hairline)' : 'var(--ks-rule)'};">
+                <i class="bi ${logro.icono || 'bi-award-fill'}" style="font-size: 1.8rem; color: ${logro.desbloqueado ? 'var(--ks-gold)' : 'var(--ks-text-faint)'};"></i>
+                <div class="ks-mono" style="font-size: 0.7rem; font-weight: 700; margin-top: 0.6rem; color: var(--ks-champagne);">${escapeHtml(logro.nombre)}</div>
+                <div class="ks-mono" style="font-size: 0.6rem; color: var(--ks-text-muted); margin-top: 0.3rem;">${escapeHtml(logro.descripcion)}</div>
+                ${logro.desbloqueado ? `<div class="ks-mono text-patina" style="font-size: 0.55rem; margin-top: 0.5rem;"><i class="bi bi-check-circle-fill"></i> ${fecha}</div>` : `<div class="ks-mono" style="font-size: 0.55rem; margin-top: 0.5rem; color: var(--ks-text-faint);"><i class="bi bi-lock-fill"></i> BLOQUEADO</div>`}
+            </div>
+        </div>
+    `;
 }
 
 // --- UTILIDADES ---

@@ -1,5 +1,6 @@
 package com.stinjoss.chat.websocket.chat_websocket.application.service;
 
+import com.stinjoss.chat.websocket.chat_websocket.application.port.in.LogroUseCase;
 import com.stinjoss.chat.websocket.chat_websocket.application.port.in.NotificationUseCase;
 import com.stinjoss.chat.websocket.chat_websocket.application.port.out.EmailPort;
 import com.stinjoss.chat.websocket.chat_websocket.domain.model.Nivel;
@@ -32,6 +33,7 @@ class GamificationServiceTest {
     @Mock private NotificationUseCase notificationUseCase;
     @Mock private NotificacionRepository notificacionRepository;
     @Mock private EmailPort emailPort;
+    @Mock private LogroUseCase logroUseCase;
 
     @InjectMocks private GamificationService gamificationService;
 

@@ -22,6 +22,8 @@ public class TareaMapper {
                 .fechaLimite(entity.getFechaLimite())
                 .completada(entity.getCompletada())
                 .categoria(entity.getCategoria())
+                .tiempoInvertidoSegundos(entity.getTiempoInvertidoSegundos() != null ? entity.getTiempoInvertidoSegundos() : 0L)
+                .timerIniciadoEn(entity.getTimerIniciadoEn())
                 .build();
     }
 
@@ -37,6 +39,8 @@ public class TareaMapper {
                 .fechaLimite(domain.getFechaLimite())
                 .completada(domain.isCompletada())
                 .categoria(domain.getCategoria())
+                .tiempoInvertidoSegundos(domain.getTiempoInvertidoSegundos())
+                .timerIniciadoEn(domain.getTimerIniciadoEn())
                 .build();
     }
 }

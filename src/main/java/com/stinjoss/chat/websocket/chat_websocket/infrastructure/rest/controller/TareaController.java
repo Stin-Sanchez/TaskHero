@@ -68,6 +68,20 @@ public class TareaController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/timer/iniciar")
+    public ResponseEntity<TareaResponse> iniciarTimer(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                TareaResponse.fromDomain(gestionarTareaUseCase.iniciarTimer(getAuthenticatedUserId(), id))
+        );
+    }
+
+    @PatchMapping("/{id}/timer/pausar")
+    public ResponseEntity<TareaResponse> pausarTimer(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                TareaResponse.fromDomain(gestionarTareaUseCase.pausarTimer(getAuthenticatedUserId(), id))
+        );
+    }
+
     @GetMapping("/stats")
     public ResponseEntity<com.stinjoss.chat.websocket.chat_websocket.application.dto.EstadisticasResponse> getStats() {
         return ResponseEntity.ok(gestionarTareaUseCase.obtenerEstadisticas(getAuthenticatedUserId()));

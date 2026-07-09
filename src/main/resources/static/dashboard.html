@@ -66,6 +66,7 @@
                 <h2 id="viewTitle" class="ks-headline">Comandancia</h2>
                 <div style="height: 1px; background: linear-gradient(90deg, var(--ks-gold), transparent); width: 60px; margin-top: 0.5rem;"></div>
             </div>
+            <div id="activeTimerBar" style="display: flex; gap: 0.75rem;"></div>
             <div style="display: flex; gap: 1rem;">
                 <div class="dropdown">
                     <button class="ks-btn ks-btn-secondary position-relative" id="btnNotifications" data-bs-toggle="dropdown" aria-expanded="false">
@@ -85,10 +86,7 @@
                 <button class="ks-btn ks-btn-secondary" id="btnShowLogros">
                     <i class="bi bi-award"></i> Logros
                 </button>
-                <button class="ks-btn ks-btn-secondary" id="btnShowEventos">
-                    <i class="bi bi-calendar-event"></i> Eventos
-                </button>
-                <button class="ks-btn ks-btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+                <button class="ks-btn ks-btn-primary" onclick="openNewTaskModal()">
                     <i class="bi bi-plus-lg"></i> Iniciar Misión
                 </button>
             </div>
@@ -114,9 +112,20 @@
                         </div>
                     </div>
                     
-                    <div class="ks-card" style="padding: 2.5rem;">
-                        <h4 class="ks-mono" style="margin-bottom: 1.5rem; color: var(--ks-gold);">CONSEJO DEL MENTOR</h4>
-                        <div id="mentorAdvice" style="font-size: 1.1rem; line-height: 1.6; color: var(--ks-text-warm);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="ks-card">
+                            <h4 class="ks-mono" style="margin-bottom: 1.25rem; color: var(--ks-gold); font-size: 0.7rem;">MISIONES POR PRIORIDAD</h4>
+                            <div id="priorityChart"></div>
+                        </div>
+                        <div class="ks-card">
+                            <h4 class="ks-mono" style="margin-bottom: 1.25rem; color: var(--ks-gold); font-size: 0.7rem;">MISIONES POR CATEGORÍA</h4>
+                            <div id="categoryChart"></div>
+                        </div>
+                    </div>
+
+                    <div class="ks-card" style="padding: 2rem;">
+                        <h4 class="ks-mono" style="margin-bottom: 1rem; color: var(--ks-gold); font-size: 0.7rem;"><i class="bi bi-compass"></i> PARTE DE SITUACIÓN</h4>
+                        <div id="mentorAdvice" style="font-size: 1rem; line-height: 1.6; color: var(--ks-text-warm);">
                             Analizando estado operativo del gremio...
                         </div>
                     </div>
@@ -255,13 +264,23 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content ks-card" style="padding: 0; overflow: hidden; border: 1px solid var(--ks-gold-hairline);">
             <div style="padding: 2rem; border-bottom: 1px solid var(--ks-rule);">
-                <h5 class="ks-wordmark">Protocolo de Nueva Misión</h5>
+                <h5 class="ks-wordmark" id="taskModalTitle">Protocolo de Nueva Misión</h5>
             </div>
             <form id="taskForm">
+                <input type="hidden" id="taskId" value="">
                 <div class="modal-body" style="padding: 2rem;">
                     <div style="margin-bottom: 1.5rem;">
                         <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">OBJETIVO TÁCTICO</label>
                         <input type="text" id="taskTitle" class="ks-input" required placeholder="Describe la misión...">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">DETALLES DE LA MISIÓN</label>
+                        <textarea id="taskDescription" class="ks-input" rows="3" style="resize: vertical; width: 100%;" placeholder="Detalles adicionales (opcional)..."></textarea>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label class="ks-mono" style="color: var(--ks-text-muted); display: block; margin-bottom: 0.5rem;">CATEGORÍA</label>
+                        <input type="text" id="taskCategory" class="ks-input" placeholder="General">
+                        <div class="ks-mono" style="font-size: 0.6rem; color: var(--ks-text-faint); margin-top: 0.4rem;">Categorías distintas de "General" requieren Nivel 3+</div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                         <div>
@@ -279,9 +298,27 @@
                     </div>
                 </div>
                 <div class="modal-footer" style="padding: 2rem; border-top: none;">
-                    <button type="submit" class="ks-btn ks-btn-primary" style="width: 100%;">DESPLEGAR MISIÓN</button>
+                    <button type="submit" class="ks-btn ks-btn-primary" style="width: 100%;" id="taskFormSubmitBtn">DESPLEGAR MISIÓN</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN (Sí/No genérico) -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ks-card" style="padding: 0; overflow: hidden; border: 1px solid var(--ks-gold-hairline);">
+            <div style="padding: 2rem; border-bottom: 1px solid var(--ks-rule);">
+                <h5 class="ks-wordmark" id="confirmModalTitle">Confirmar Acción</h5>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <p class="ks-mono" id="confirmModalMessage" style="font-size: 0.85rem; margin: 0;"></p>
+            </div>
+            <div class="modal-footer" style="padding: 2rem; border-top: none; gap: 1rem;">
+                <button type="button" class="ks-btn ks-btn-secondary" style="flex: 1;" data-bs-dismiss="modal">NO</button>
+                <button type="button" class="ks-btn ks-btn-primary" style="flex: 1;" id="confirmModalYesBtn">SÍ</button>
+            </div>
         </div>
     </div>
 </div>

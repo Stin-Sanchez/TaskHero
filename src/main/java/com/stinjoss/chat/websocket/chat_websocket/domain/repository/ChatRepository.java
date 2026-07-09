@@ -13,4 +13,5 @@ public interface ChatRepository {
     java.util.Optional<GrupoChat> findGrupoById(Long id);
     void agregarMiembroAlGrupo(Long grupoId, Long usuarioId);
     List<GrupoChat> buscarGruposPorNombre(String nombre);
+    boolean esMiembroDelGrupo(Long usuarioId, Long grupoId);
 }
