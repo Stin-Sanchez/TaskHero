@@ -35,5 +35,8 @@ build/
 # Configuración local y secretos
 src/main/resources/application.properties
 
+# Configuración local del asistente (Claude Code / preview tooling), no debe compartirse
+.claude/
+
 # Documentos privados
 *.pdf
