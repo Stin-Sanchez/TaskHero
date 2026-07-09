@@ -6,16 +6,32 @@ $(document).ready(function() {
     const API_URL = "/api/auth";
 
     // --- FORM TOGGLES ---
+    const ALL_FORMS = ["#loginForm", "#registerForm", "#forgotForm", "#resetForm"];
+
+    function showForm(formSelector) {
+        ALL_FORMS.forEach(sel => $(sel).toggleClass("d-none", sel !== formSelector));
+        // El bloque de "¿sin acceso? / ¿cuenta activa?" solo tiene sentido en login/registro
+        $("#bottomToggleArea").toggleClass("d-none", formSelector === "#forgotForm" || formSelector === "#resetForm");
+    }
+
     $("#showRegister").click(() => {
-        $("#loginForm").addClass("d-none");
-        $("#registerForm").removeClass("d-none");
+        showForm("#registerForm");
         $("#loginToggleText").addClass("d-none");
         $("#registerToggleText").removeClass("d-none");
     });
 
     $("#showLogin").click(() => {
-        $("#registerForm").addClass("d-none");
-        $("#loginForm").removeClass("d-none");
+        showForm("#loginForm");
+        $("#registerToggleText").addClass("d-none");
+        $("#loginToggleText").removeClass("d-none");
+    });
+
+    $("#showForgot").click(() => {
+        showForm("#forgotForm");
+    });
+
+    $("#backToLoginFromForgot, #backToLoginFromReset").click(() => {
+        showForm("#loginForm");
         $("#registerToggleText").addClass("d-none");
         $("#loginToggleText").removeClass("d-none");
     });
@@ -77,6 +93,62 @@ $(document).ready(function() {
         });
     });
 
+    // --- RECUPERACIÓN DE CONTRASEÑA (paso 1: solicitar código) ---
+    let recoveryEmail = "";
+
+    $("#forgotForm").submit(function(e) {
+        e.preventDefault();
+        const btn = $("#forgotBtn");
+        setBtnLoading(btn, true);
+
+        recoveryEmail = $("#forgotEmail").val();
+
+        $.ajax({
+            url: `${API_URL}/forgot-password`,
+            type: "POST",
+            data: { email: recoveryEmail },
+            success: function() {
+                showAuthToast("Código enviado. Revisa tu correo.", "success");
+                showForm("#resetForm");
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || "No se pudo enviar el código";
+                showAuthToast(msg, "error");
+            },
+            complete: () => setBtnLoading(btn, false)
+        });
+    });
+
+    // --- RECUPERACIÓN DE CONTRASEÑA (paso 2: canjear código) ---
+    $("#resetForm").submit(function(e) {
+        e.preventDefault();
+        const btn = $("#resetBtn");
+        setBtnLoading(btn, true);
+
+        const data = {
+            email: recoveryEmail,
+            token: $("#resetToken").val().trim().toUpperCase(),
+            nuevaPassword: $("#resetPassword").val()
+        };
+
+        $.ajax({
+            url: `${API_URL}/reset-password`,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            success: function() {
+                showAuthToast("Llave restablecida. Ya puedes sincronizar.", "success");
+                $("#resetForm")[0].reset();
+                $("#backToLoginFromReset").click();
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || "Código inválido o expirado";
+                showAuthToast(msg, "error");
+            },
+            complete: () => setBtnLoading(btn, false)
+        });
+    });
+
     // --- STRENGTH METER ---
     $('#regPassword').on('input', function() {
         const pass = $(this).val();
@@ -98,6 +170,10 @@ function showAuthToast(msg, type) {
 }
 
 function setBtnLoading(btn, loading) {
-    if (loading) btn.prop("disabled", true).css("opacity", "0.6").text("...");
-    else btn.prop("disabled", false).css("opacity", "1").text(btn.data("original") || "SINCRONIZAR");
+    if (loading) {
+        btn.data("original-text", btn.text());
+        btn.prop("disabled", true).css("opacity", "0.6").text("...");
+    } else {
+        btn.prop("disabled", false).css("opacity", "1").text(btn.data("original-text"));
+    }
 }
