@@ -11,6 +11,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Caso de uso de autenticación y recuperación de contraseña (RF-02/RF-03).
+ * <p>
+ * Un login exitoso no solo emite el token JWT: también dispara el
+ * procesamiento de racha diaria y XP del héroe (RF-11), delegado en
+ * {@link GamificationUseCase#procesarLoginDiario}.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService implements AutenticarUsuarioUseCase {
@@ -21,13 +28,24 @@ public class AuthService implements AutenticarUsuarioUseCase {
     private final GamificationUseCase gamificationUseCase;
     private final com.stinjoss.chat.websocket.chat_websocket.application.port.out.EmailPort emailPort;
 
+    /**
+     * Autentica credenciales y, si son válidas, emite un JWT y procesa el
+     * login diario del héroe (racha + XP).
+     * <p>
+     * Se lanza el mismo mensaje genérico ("Credenciales inválidas") tanto si
+     * el email no existe como si la contraseña no coincide, para no revelar a
+     * un atacante si un correo está o no registrado en el sistema.
+     *
+     * @throws com.stinjoss.chat.websocket.chat_websocket.domain.exception.InvalidCredentialsException
+     *         si el email no existe o la contraseña no coincide (HTTP 401).
+     */
     @Override
     public AuthResponse autenticar(LoginRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+                .orElseThrow(() -> new com.stinjoss.chat.websocket.chat_websocket.domain.exception.InvalidCredentialsException("Credenciales inválidas"));
 
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPasswordHash())) {
-            throw new RuntimeException("Credenciales inválidas");
+            throw new com.stinjoss.chat.websocket.chat_websocket.domain.exception.InvalidCredentialsException("Credenciales inválidas");
         }
 
         // Disparar lógica de login diario (XP + Racha)
@@ -42,6 +60,13 @@ public class AuthService implements AutenticarUsuarioUseCase {
                 .build();
     }
 
+    /**
+     * Genera un código de recuperación de un solo uso, válido por 15 minutos
+     * (RF-03), y lo envía por correo electrónico.
+     *
+     * @throws com.stinjoss.chat.websocket.chat_websocket.domain.exception.ResourceNotFoundException
+     *         si no existe un usuario con ese correo.
+     */
     @Override
     public void solicitarRecuperacion(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
@@ -55,6 +80,13 @@ public class AuthService implements AutenticarUsuarioUseCase {
         emailPort.enviarCorreoRecuperacion(email, token);
     }
 
+    /**
+     * Completa el flujo de recuperación validando el código recibido por
+     * correo antes de aplicar la nueva contraseña.
+     *
+     * @throws com.stinjoss.chat.websocket.chat_websocket.domain.exception.ResourceNotFoundException si el usuario no existe.
+     * @throws com.stinjoss.chat.websocket.chat_websocket.domain.exception.DomainException si el código no coincide o ya expiró (más de 15 minutos).
+     */
     @Override
     public void resetearPassword(String email, String token, String nuevaPassword) {
         Usuario usuario = usuarioRepository.findByEmail(email)

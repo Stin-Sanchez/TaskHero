@@ -45,6 +45,13 @@ public class TareaEntity {
     @Column(length = 50)
     private String categoria;
 
+    @Builder.Default
+    @Column(name = "tiempo_invertido_segundos", nullable = false, columnDefinition = "bigint default 0")
+    private Long tiempoInvertidoSegundos = 0L;
+
+    @Column(name = "timer_iniciado_en")
+    private LocalDateTime timerIniciadoEn;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

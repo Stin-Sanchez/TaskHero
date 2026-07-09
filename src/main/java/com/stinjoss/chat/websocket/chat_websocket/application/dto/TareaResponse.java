@@ -20,6 +20,8 @@ public class TareaResponse {
     private LocalDate fechaLimite;
     private boolean completada;
     private String categoria;
+    private long tiempoInvertidoSegundos;
+    private boolean timerActivo;
 
     public static TareaResponse fromDomain(Tarea tarea) {
         return TareaResponse.builder()
@@ -30,6 +32,8 @@ public class TareaResponse {
                 .fechaLimite(tarea.getFechaLimite())
                 .completada(tarea.isCompletada())
                 .categoria(tarea.getCategoria())
+                .tiempoInvertidoSegundos(tarea.getTiempoTotalSegundos())
+                .timerActivo(tarea.isTimerActivo())
                 .build();
     }
 }

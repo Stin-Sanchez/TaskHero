@@ -135,6 +135,21 @@
 .pr-med { background-color: var(--ks-gold); }
 .pr-low { background-color: var(--ks-text-muted); }
 
+/* Timer de tarea: boton "PAUSAR" con acento patina para diferenciarlo de INICIAR/REANUDAR */
+.ks-btn-timer-active {
+    background-color: var(--ks-patina);
+    color: var(--ks-lacquer-deep);
+}
+
+.timer-pulse-dot i {
+    animation: ks-timer-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ks-timer-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+}
+
 /* Avatar Selector */
 .avatar-option:hover {
     transform: scale(1.1);

@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
+/**
+ * Casos de uso de registro de cuenta (RF-01) y edición de perfil (RF-04).
+ */
 @Service
 @RequiredArgsConstructor
 public class UsuarioService implements RegistrarUsuarioUseCase, GestionarPerfilUseCase {
@@ -24,6 +27,16 @@ public class UsuarioService implements RegistrarUsuarioUseCase, GestionarPerfilU
     private final PasswordEncoder passwordEncoder;
     private final com.stinjoss.chat.websocket.chat_websocket.application.port.out.EmailPort emailPort;
 
+    /**
+     * Registra un nuevo héroe con sus valores iniciales de gamificación en cero
+     * (Nivel 1, sin XP ni racha) y envía el correo de bienvenida.
+     * <p>
+     * {@code ultimoLogin} se fija al momento del registro de forma intencional:
+     * así el primer inicio de sesión del usuario no cuenta como "primer login
+     * del día" y no duplica el bono de racha que ya implícitamente arrancó al crear la cuenta.
+     *
+     * @throws DomainException si el email ya está registrado.
+     */
     @Override
     @Transactional
     public Usuario registrar(RegistroRequest request) {
@@ -50,6 +63,17 @@ public class UsuarioService implements RegistrarUsuarioUseCase, GestionarPerfilU
         return guardado;
     }
 
+    /**
+     * Actualiza nombre y avatar del héroe, y opcionalmente su contraseña.
+     * <p>
+     * El cambio de contraseña es un sub-flujo condicional: solo se valida y
+     * aplica si el usuario envía {@code passwordNueva}; en ese caso es
+     * obligatorio confirmar la contraseña actual, como medida contra un
+     * secuestro de sesión que intente cambiar la contraseña sin conocerla.
+     *
+     * @throws ResourceNotFoundException si el usuario no existe.
+     * @throws DomainException si se intenta cambiar la contraseña sin indicar correctamente la actual.
+     */
     @Override
     @Transactional
     public Usuario actualizarPerfil(Long usuarioId, PerfilRequest request) {

@@ -12,4 +12,6 @@ public interface GestionarTareaUseCase {
     List<Tarea> listarTareasPorUsuario(Long usuarioId);
     Tarea marcarComoCompletada(Long usuarioId, Long tareaId);
     com.stinjoss.chat.websocket.chat_websocket.application.dto.EstadisticasResponse obtenerEstadisticas(Long usuarioId);
+    Tarea iniciarTimer(Long usuarioId, Long tareaId);
+    Tarea pausarTimer(Long usuarioId, Long tareaId);
 }

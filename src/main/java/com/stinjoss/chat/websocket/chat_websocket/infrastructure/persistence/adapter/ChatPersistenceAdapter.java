@@ -126,6 +126,14 @@ public class ChatPersistenceAdapter implements ChatRepository {
     }
 
     @Override
+    public boolean esMiembroDelGrupo(Long usuarioId, Long grupoId) {
+        // Consulta directa a la relacion usuario_grupos: GrupoChatEntity/ChatMapper no cargan
+        // miembrosIds (queda vacio a proposito, ver comentario en ChatMapper), asi que la
+        // pertenencia real solo puede verificarse aqui, contra la tabla puente.
+        return usuarioGrupoRepository.existsById(new UsuarioGrupoId(usuarioId, grupoId));
+    }
+
+    @Override
     public List<GrupoChat> buscarGruposPorNombre(String nombre) {
         return grupoChatRepository.findByNombreContainingIgnoreCase(nombre).stream()
                 .map(mapper::toDomain)

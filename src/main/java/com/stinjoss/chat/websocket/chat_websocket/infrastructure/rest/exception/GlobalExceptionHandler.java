@@ -1,7 +1,9 @@
 package com.stinjoss.chat.websocket.chat_websocket.infrastructure.rest.exception;
 
+import com.stinjoss.chat.websocket.chat_websocket.domain.exception.GrupoAccessDeniedException;
 import com.stinjoss.chat.websocket.chat_websocket.domain.exception.DomainException;
 import com.stinjoss.chat.websocket.chat_websocket.domain.exception.InsufficientLevelException;
+import com.stinjoss.chat.websocket.chat_websocket.domain.exception.InvalidCredentialsException;
 import com.stinjoss.chat.websocket.chat_websocket.domain.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -51,6 +53,28 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InsufficientLevelException.class)
     public ResponseEntity<ApiError> handleInsufficientLevelException(InsufficientLevelException ex, HttpServletRequest request) {
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentialsException(InvalidCredentialsException ex, HttpServletRequest request) {
+        ApiError apiError = ApiError.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(GrupoAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleGrupoAccessDeniedException(GrupoAccessDeniedException ex, HttpServletRequest request) {
         ApiError apiError = ApiError.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
