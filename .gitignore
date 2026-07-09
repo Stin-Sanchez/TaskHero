@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+# Secretos locales (perfil "local" de Spring) — nunca se comparten
+src/main/resources/application-local.properties
+
 # Configuración local del asistente (Claude Code / preview tooling), no debe compartirse
 .claude/
 
